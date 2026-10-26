@@ -1,0 +1,18 @@
+{
+  "legacy_loaded":true,
+  "maps": [
+    {"seed":1,"action_time_jump":0,"idle_minutes_per_24_seconds":60,"loss":5,"tools_crafted":7,"zoomed_clicks":6,"save_roundtrip":true},
+    {"seed":7,"action_time_jump":0,"idle_minutes_per_24_seconds":60,"loss":5,"tools_crafted":7,"zoomed_clicks":6,"save_roundtrip":true},
+    {"seed":42,"action_time_jump":0,"idle_minutes_per_24_seconds":60,"loss":5,"tools_crafted":7,"zoomed_clicks":6,"save_roundtrip":true},
+    {"seed":2026,"action_time_jump":0,"idle_minutes_per_24_seconds":60,"loss":5,"tools_crafted":7,"zoomed_clicks":6,"save_roundtrip":true}
+  ],
+  "panel_interactions":true,
+  "active_craft_save":true,
+  "night_craft_walk_tent_entry":true,
+  "night_construction_finishes":true,
+  "paused_field_return_and_finish":true,
+  "remaining_material_shortage":true,
+  "focus_and_grid":true,
+  "river_and_sea_animation":true,
+  "passed":true
+}

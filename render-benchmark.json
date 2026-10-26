@@ -1,0 +1,12 @@
+{
+  "scenes": [
+    {"scene":"actions","mean_ms":6.08998,"p95_ms":6.731},
+    {"scene":"build","mean_ms":5.77096,"p95_ms":6.3},
+    {"scene":"inventory","mean_ms":6.05597,"p95_ms":6.651},
+    {"scene":"craft","mean_ms":6.79217,"p95_ms":8.048},
+    {"scene":"rain","mean_ms":7.16635,"p95_ms":7.911},
+    {"scene":"storm","mean_ms":6.99639,"p95_ms":7.577},
+    {"scene":"pause","mean_ms":9.13519,"p95_ms":9.803},
+    {"scene":"chinese_dialog","mean_ms":7.93076,"p95_ms":8.827}
+  ]
+}

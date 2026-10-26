@@ -1,0 +1,323 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+//#include "afxres.h"
+#include <winres.h>
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Deutschland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(65001)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+MISC                    BITMAP  DISCARDABLE     "../bin/images/Misc.BMP"
+PANEL                   BITMAP  DISCARDABLE     "../bin/images/Panel.BMP"
+GUYANI                  BITMAP  DISCARDABLE     "../bin/images/GuyAni.BMP"
+ANIMATION               BITMAP  DISCARDABLE     "../bin/images/Animation.BMP"
+BAUM                    BITMAP  DISCARDABLE     "../bin/images/Baum.bmp"
+CURSORBMP               BITMAP  DISCARDABLE     "../bin/images/Cursor.BMP"
+BUTTONS                 BITMAP  DISCARDABLE     "../bin/images/Buttons.bmp"
+SCHRIFT2                BITMAP  DISCARDABLE     "../bin/images/Schrift2.bmp"
+SCHRIFT1                BITMAP  DISCARDABLE     "../bin/images/Schrift1.BMP"
+TEXTFELD                BITMAP  DISCARDABLE     "../bin/images/Textfeld.bmp"
+PAPIER                  BITMAP  DISCARDABLE     "../bin/images/Papier.BMP"
+INVENTARBMP             BITMAP  DISCARDABLE     "../bin/images/Inventar.bmp"
+BAU                     BITMAP  DISCARDABLE     "../bin/images/Bau.BMP"
+CREDITS                 BITMAP  DISCARDABLE     "../bin/images/credits.bmp"
+LOGO                    BITMAP  DISCARDABLE     "../bin/images/Logo.bmp"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,3,0,0
+ PRODUCTVERSION 1,3,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "dP-Software\0"
+            VALUE "FileDescription", "Schiffbruch\0"
+            VALUE "FileVersion", "1, 3, 0, 0\0"
+            VALUE "InternalName", "Schiffbruch\0"
+            VALUE "LegalCopyright", "Copyright � 2002 Dirk Plate\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "Schiffbruch.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "Schiffbruch\0"
+            VALUE "ProductVersion", "1.3\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "../bin/images/Schiffbruch.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    TESTTEXT1               L"\x4e2d\x6587\x663e\x793a\x6d4b\x8bd5\x3002\x7b2c\x0020\x002f\x0061\x0020\x5929\x3002\x0020\x002f\x007a\x0020\x8bf7\x5148\x5bfb\x627e\x6c34\x6e90\xff0c\x518d\x5efa\x7acb\x8425\x5730\x3002"
+    GITTERAN                L"\x663e\x793a\x5730\x5757\x7f51\x683c"
+    GITTERAUS               L"\x9690\x85cf\x5730\x5757\x7f51\x683c"
+    KEINEFUNKTION           L"\x8fd9\x9879\x529f\x80fd\x5c1a\x672a\x5f00\x653e\x3002\x8bf7\x5148\x63a2\x7d22\x5c9b\x5c7f\xff0c\x89e3\x9501\x6240\x9700\x5de5\x5177\x3002"
+    MEAKTIONAUF             L"\x6253\x5f00\x884c\x52a8\x9762\x677f"
+    MEAKTIONZU              L"\x6536\x8d77\x884c\x52a8\x9762\x677f"
+    BEGINNSUCHEN            L"\x641c\x7d22\x5468\x56f4"
+    BEGINNFAELLEN           L"\x780d\x4f10\x6811\x6728"
+    SOSPAET                 L"\x65f6\x95f4\xff1a\x6bcf\x5929\x508d\x665a\x516d\x70b9\x5165\x591c\xff0c\x8bf7\x63d0\x524d\x8fd4\x56de\x5e87\x62a4\x6240\x3002"
+    BEGINNESSEN             L"\x8fdb\x98df\x6216\x996e\x6c34"
+    MEINVENTARAUF           L"\x6253\x5f00\x80cc\x5305"
+    MEINVENTARZU            L"\x6536\x8d77\x80cc\x5305"
+    FREI                    L"\x3002"
+    AST                     L"\x6811\x679d"
+    STEIN                   L"\x77f3\x5934"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ROHASTGEFUNDEN          L"\x627e\x5230\x4e86\x53ef\x7528\x7684\x6811\x679d\x3002\x6811\x679d\x53ef\x4ee5\x4e0e\x77f3\x5934\x5236\x4f5c\x5de5\x5177\xff0c\x4e5f\x53ef\x4ee5\x7528\x6765\x5efa\x9020\x8425\x5730\x3002"
+    ROHASTZUVIEL            L"\x6811\x679d\x5df2\x7ecf\x88c5\x6ee1\x4e86\x3002\x5148\x7528\x73b0\x6709\x6750\x6599\x5236\x4f5c\x5de5\x5177\x6216\x5efa\x9020\x5efa\x7b51\x5427\x3002"
+    ROHSTEINGEFUNDEN        L"\x5728\x9644\x8fd1\x627e\x5230\x4e86\x4e09\x5757\x77f3\x5934\xff0c\x5df2\x7ecf\x653e\x5165\x80cc\x5305\x3002"
+    ROHSTEINZUVIEL          L"\x77f3\x5934\x5df2\x7ecf\x88c5\x6ee1\x4e86\x3002\x5148\x7528\x6389\x4e00\x4e9b\xff0c\x518d\x56de\x6765\x91c7\x96c6\x3002"
+    NICHTSGEFUNDEN          L"\x4ed4\x7ec6\x641c\x7d22\x540e\xff0c\x6ca1\x6709\x627e\x5230\x53ef\x7528\x7684\x7269\x8d44\x3002\x8bd5\x7740\x53bb\x6811\x6797\x3001\x6d77\x6ee9\x6216\x9057\x8ff9\x5bfb\x627e\x3002"
+    AXT                     L"\x77f3\x65a7"
+    KEINESSENTRINKEN        L"\x8fd9\x91cc\x6ca1\x6709\x6210\x719f\x7684\x98df\x7269\x6216\x53ef\x996e\x7528\x7684\x6c34\x3002\x5bfb\x627e\x6210\x719f\x7684\x704c\x6728\x3001\x519c\x7530\x6216\x6cb3\x6d41\x5427\x3002"
+    BAUEAXT                 L"\x77f3\x65a7\x5236\x4f5c\x5b8c\x6210\xff01\x73b0\x5728\x53ef\x4ee5\x780d\x6811\x3001\x5236\x4f5c\x72ec\x6728\x821f\x548c\x6c34\x7ba1\x3002\x0020\x002f\x007a\x0020\x6811\x679d\x4e0e\x77f3\x5934\x8fd8\x53ef\x4ee5\x5236\x4f5c\x4e00\x628a\x8015\x4f5c\x7528\x7684\x77f3\x9504\x3002"
+    STEINPLUSASTNICHTS      L"\x5df2\x7ecf\x638c\x63e1\x4e86\x8fd9\x7ec4\x6750\x6599\x7684\x6240\x6709\x914d\x65b9\x3002"
+    NICHTBASTELN            L"\x8fd9\x4e24\x79cd\x6750\x6599\x65e0\x6cd5\x7ec4\x5408\x3002\x6253\x5f00\x201c\x5236\x4f5c\x201d\x67e5\x770b\x53ef\x7528\x914d\x65b9\x3002"
+    ROHBLATTGEFUNDEN        L"\x627e\x5230\x4e86\x4e00\x7247\x5bbd\x5927\x7684\x68d5\x53f6\xff0c\x53ef\x4ee5\x7528\x6765\x5efa\x9020\x5e10\x7bf7\x6216\x5236\x4f5c\x91ce\x5916\x7528\x54c1\x3002"
+    ROHBLATTZUVIEL          L"\x68d5\x53f6\x5df2\x7ecf\x88c5\x6ee1\x4e86\xff0c\x6682\x65f6\x65e0\x6cd5\x643a\x5e26\x66f4\x591a\x3002"
+    BLATT                   L"\x68d5\x53f6"
+    ROHSTAMMZUVIEL          L"\x539f\x6728\x5df2\x7ecf\x88c5\x6ee1\x4e86\xff0c\x5148\x7528\x73b0\x6709\x6728\x6750\x5efa\x9020\x8425\x5730\x3002"
+    MEBAUENAUF              L"\x6253\x5f00\x5efa\x9020\x9762\x677f"
+    MEBAUENZU               L"\x6536\x8d77\x5efa\x9020\x9762\x677f"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    BEGINNFELD              L"\x5f00\x57a6\x519c\x7530"
+    GEGENDNICHT             L"\x8fd9\x91cc\x4e0d\x9002\x5408\x8fdb\x884c\x8fd9\x9879\x64cd\x4f5c\x3002"
+    BAUEEGGE                L"\x77f3\x9504\x5236\x4f5c\x5b8c\x6210\xff01\x73b0\x5728\x53ef\x4ee5\x5728\x5e73\x5766\x3001\x6e7f\x6da6\x7684\x8349\x5730\x4e0a\x5f00\x57a6\x519c\x7530\x3002"
+    EGGE                    L"\x77f3\x9504"
+    TAGENDE1                L"\x7b2c\x0020\x002f\x0061\x0020\x5929\x7ed3\x675f\x4e86\x3002\x4eca\x665a\x53ea\x80fd\x9732\x5bbf\xff0c\x91ce\x517d\x8ba9\x4f60\x96be\x4ee5\x5b89\x7761\x3002\x0020\x002f\x007a\x0020\x5f53\x524d\x751f\x547d\xff1a\x0020\x002f\x0062\x0020\x0025\x3002\x83b7\x6551\x673a\x4f1a\xff1a\x0020\x002f\x0063\x0020\x0025\x3002\x0020\x002f\x007a\x0020\x660e\x5929\x5c3d\x65e9\x642d\x5efa\x5e87\x62a4\x6240\x3002"
+    GERETTET                L"\x6d77\x5e73\x7ebf\x4e0a\x51fa\x73b0\x4e86\x4e00\x8258\x8239\xff01\x4f60\x7684\x6c42\x6551\x4fe1\x53f7\x88ab\x53d1\x73b0\x4e86\x3002\x0020\x002f\x007a\x0020\x8981\x4e58\x8239\x79bb\x5f00\x8fd9\x5ea7\x5c9b\x5417\xff1f\x0020\x002f\x0064\x0020"
+    BEGINNZELT              L"\x642d\x5efa\x5e10\x7bf7"
+    ROHSTOFFNICHT           L"\x6750\x6599\x4e0d\x8db3\xff0c\x5efa\x9020\x5df2\x7ecf\x6682\x505c\x3002\x6536\x96c6\x7f3a\x5c11\x7684\x6750\x6599\x540e\xff0c\x70b9\x51fb\x201c\x7ee7\x7eed\x5efa\x9020\x201d\x3002"
+    KEINBAUM                L"\x8fd9\x91cc\x6ca1\x6709\x53ef\x4ee5\x780d\x4f10\x7684\x6811\x6728\x3002"
+    WEITER                  L"\x7ee7\x7eed\x5efa\x9020"
+    STOP                    L"\x505c\x6b62\x5f53\x524d\x884c\x52a8"
+    TAGENDE2                L"\x7b2c\x0020\x002f\x0061\x0020\x5929\x7ed3\x675f\x4e86\x3002\x5e10\x7bf7\x6321\x4f4f\x4e86\x90e8\x5206\x5371\x9669\xff0c\x4f46\x4ecd\x6709\x91ce\x517d\x9a9a\x6270\x3002\x0020\x002f\x007a\x0020\x5f53\x524d\x751f\x547d\xff1a\x0020\x002f\x0062\x0020\x0025\x3002\x83b7\x6551\x673a\x4f1a\xff1a\x0020\x002f\x0063\x0020\x0025\x3002\x0020\x002f\x007a\x0020\x66f4\x7262\x56fa\x7684\x6811\x5c4b\x80fd\x63d0\x4f9b\x66f4\x597d\x7684\x4fdd\x62a4\x3002"
+    BEGINNSCHLAFEN          L"\x4f11\x606f\x4e00\x5c0f\x65f6"
+    WIESETEXT               L"\x8349\x5730"
+    MEERTEXT                L"\x6d77\x6d0b"
+    STRANDTEXT              L"\x6c99\x6ee9"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    TREIBSANDTEXT           L"\x6d41\x6c99"
+    FEUCHTEWIESETEXT        L"\x6e7f\x6da6\x8349\x5730"
+    BAUMTEXT                L"\x6811\x6728"
+    FELDTEXT                L"\x519c\x7530"
+    ZELTTEXT                L"\x5e10\x7bf7"
+    BUSCHTEXT               L"\x704c\x6728"
+    MIT                     L"\x00b7"
+    LIANE                   L"\x85e4\x8513"
+    ROHLIANEGEFUNDEN        L"\x4ece\x6811\x4e0a\x53d6\x4e0b\x4e86\x4e00\x6839\x85e4\x8513\x3002\x5b83\x53ef\x4ee5\x7528\x6765\x5236\x4f5c\x9493\x7aff\x3001\x7ef3\x7d22\x4e0e\x91ce\x5916\x7528\x54c1\x3002"
+    ROHLIANEZUVIEL          L"\x85e4\x8513\x5df2\x7ecf\x88c5\x6ee1\x4e86\xff0c\x6682\x65f6\x65e0\x6cd5\x643a\x5e26\x66f4\x591a\x3002"
+    ANGEL                   L"\x9493\x7aff"
+    BAUEANGEL               L"\x9493\x7aff\x5236\x4f5c\x5b8c\x6210\xff01\x73b0\x5728\x53ef\x4ee5\x5728\x6cb3\x8fb9\x6216\x8239\x4e0a\x9493\x9c7c\xff0c\x8865\x5145\x98df\x7269\x3002"
+    BEGINNANGELN            L"\x9493\x9c7c"
+    KEINWASSER              L"\x9700\x8981\x7ad9\x5728\x6cb3\x6d41\x65c1\x6216\x4e58\x8239\x624d\x80fd\x9493\x9c7c\x3002"
+    BOOTTEXT                L"\x72ec\x6728\x821f"
+    BEGINNBOOT              L"\x5236\x4f5c\x72ec\x6728\x821f"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    STAMM                   L"\x539f\x6728"
+    BEGINNABLEGEN           L"\x4e0a\x8239\x6216\x9760\x5cb8"
+    TAGENDE3                L"\x7b2c\x0020\x002f\x0061\x0020\x5929\x7ed3\x675f\x4e86\x3002\x591c\x665a\x7684\x6d77\x6d0b\x592a\x5371\x9669\xff0c\x5c0f\x8239\x9010\x6e10\x5931\x53bb\x65b9\x5411\x3002\x0020\x002f\x007a\x0020\x65c5\x7a0b\x7ed3\x675f\x4e86\x3002\x4e0b\x6b21\x8bf7\x5728\x5929\x9ed1\x524d\x9760\x5cb8\x3002"
+    FLUSSTEXT               L"\x6cb3\x6d41"
+    BEGINNROHR              L"\x94fa\x8bbe\x704c\x6e89\x6c34\x7ba1"
+    ROHRTEXT                L"\x704c\x6e89\x6c34\x7ba1"
+    BEGINNDESTROY           L"\x62c6\x9664\x5efa\x7b51"
+    KEINBAUWERK             L"\x8fd9\x91cc\x6ca1\x6709\x53ef\x4ee5\x62c6\x9664\x7684\x5efa\x7b51\x3002"
+    BEGINNSOS               L"\x94fa\x8bbe\x6c42\x6551\x6807\x8bb0"
+    SOSTEXT                 L"\x6c42\x6551\x6807\x8bb0"
+    BAUMZUGROSS             L"\x8fd9\x68f5\x6811\x592a\x5927\xff0c\x73b0\x6709\x5de5\x5177\x65e0\x6cd5\x5c06\x5b83\x780d\x5012\x3002\x5b83\x9002\x5408\x5efa\x9020\x6811\x5c4b\x3002"
+    BEGINNHAUS1             L"\x642d\x5efa\x6811\x5c4b\x68af\x5b50"
+    HAUS1TEXT               L"\x6811\x5c4b\x68af\x5b50"
+    HAMMERTEXT              L"\x9524\x5b50"
+    BEGINNHAUS2             L"\x642d\x5efa\x6811\x5c4b\x5e73\x53f0"
+    HAUS2TEXT               L"\x6811\x5c4b\x5e73\x53f0"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    HAUS3TEXT               L"\x6811\x5c4b"
+    BEGINNHAUS3             L"\x5efa\x9020\x6811\x5c4b"
+    TAGENDE4                L"\x7b2c\x0020\x002f\x0061\x0020\x5929\x7ed3\x675f\x4e86\x3002\x6811\x5c4b\x6321\x4f4f\x4e86\x91ce\x517d\xff0c\x4f60\x7761\x4e86\x4e00\x4e2a\x597d\x89c9\x3002\x0020\x002f\x007a\x0020\x5f53\x524d\x751f\x547d\xff1a\x0020\x002f\x0062\x0020\x0025\x3002\x83b7\x6551\x673a\x4f1a\xff1a\x0020\x002f\x0063\x0020\x0025\x3002"
+    BAUMZUKLEIN             L"\x8fd9\x68f5\x6811\x592a\x5c0f\xff0c\x65e0\x6cd5\x652f\x6491\x6811\x5c4b\x3002\x8bf7\x5bfb\x627e\x5c9b\x4e0a\x7684\x5927\x6811\x3002"
+    NICHTOHNELEITER         L"\x5148\x5728\x5927\x6811\x4e0a\x5efa\x9020\x68af\x5b50\xff0c\x624d\x80fd\x7ee7\x7eed\x642d\x5efa\x5e73\x53f0\x3002"
+    NICHTOHNEPLATTFORM      L"\x5148\x5b8c\x6210\x68af\x5b50\x548c\x5e73\x53f0\xff0c\x624d\x80fd\x5efa\x9020\x6811\x5c4b\x3002"
+    CHANCETEXT              L"\x5f53\x5929\x83b7\x6551\x673a\x4f1a"
+    BAUMGROSSTEXT           L"\x5927\x6811"
+    FEUERSTELLETEXT         L"\x7bdd\x706b\x5806"
+    BEGINNFEUERSTELLE       L"\x642d\x5efa\x7bdd\x706b\x5806"
+    FEUERTEXT               L"\x4fe1\x53f7\x7bdd\x706b"
+    BEGINNANZUENDEN         L"\x70b9\x71c3\x7bdd\x706b"
+    KEINEFEUERST            L"\x9700\x8981\x4e00\x5ea7\x5efa\x6210\x7684\x7bdd\x706b\x5806\x624d\x80fd\x70b9\x706b\x3002"
+    BEGINNAUSSCHAU          L"\x773a\x671b\x8fc7\x5f80\x8239\x53ea"
+    FERNROHR                L"\x671b\x8fdc\x955c"
+    BEGINNSCHATZKARTE       L"\x67e5\x770b\x85cf\x5b9d\x56fe"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    SCHAUFEL                L"\x94f2\x5b50"
+    STREICHHOLZ             L"\x706b\x67f4"
+    BEGINNSCHATZ            L"\x6316\x6398\x5b9d\x85cf"
+    SCHATZGEFUNDEN          L"\x4f60\x6316\x51fa\x4e86\x4e00\x53ea\x65e7\x6d77\x76d7\x7bb1\xff01\x91cc\x9762\x5e76\x6ca1\x6709\x91d1\x94f6\xff0c\x53ea\x6709\x4e00\x76d2\x4fdd\x5b58\x5b8c\x597d\x7684\x706b\x67f4\x3002\x0020\x002f\x007a\x0020\x6709\x4e86\x706b\x67f4\xff0c\x73b0\x5728\x53ef\x4ee5\x70b9\x71c3\x7bdd\x706b\x3002"
+    KEINSCHATZ              L"\x8fd9\x91cc\x6ca1\x6709\x627e\x5230\x5b9d\x85cf\x3002\x5148\x67e5\x770b\x85cf\x5b9d\x56fe\xff0c\x786e\x8ba4\x9644\x8fd1\x5730\x5f62\x3002"
+    WRACKTEXT               L"\x6c89\x8239"
+    FERNROHRGEFUNDEN        L"\x5728\x8239\x957f\x5ba4\x627e\x5230\x4e86\x671b\x8fdc\x955c\xff01\x73b0\x5728\x53ef\x4ee5\x773a\x671b\x8fc7\x5f80\x8239\x53ea\xff0c\x63d0\x9ad8\x83b7\x6551\x673a\x4f1a\x3002\x0020\x002f\x007a\x0020\x4f60\x8fd8\x627e\x5230\x4e86\x9524\x5b50\x548c\x94c1\x9489\xff0c\x73b0\x5728\x53ef\x4ee5\x5efa\x9020\x66f4\x575a\x56fa\x7684\x6811\x5c4b\x3002"
+    INTROTEXT               L"\x4f60\x5728\x592a\x5e73\x6d0b\x7684\x4e00\x5ea7\x8352\x5c9b\x4e0a\x9192\x6765\x3002\x0020\x002f\x007a\x0020\x5148\x5bfb\x627e\x6de1\x6c34\x548c\x98df\x7269\xff0c\x518d\x7528\x6811\x679d\x3001\x77f3\x5934\x548c\x85e4\x8513\x5236\x4f5c\x5de5\x5177\x3002\x5929\x9ed1\x524d\xff0c\x5c3d\x91cf\x642d\x5efa\x4e00\x5904\x5e87\x62a4\x6240\x3002"
+    NICHTSGEFUNDEN2         L"\x5df2\x7ecf\x641c\x7d22\x8fc7\x8fd9\x91cc\xff0c\x6ca1\x6709\x53d1\x73b0\x66f4\x591a\x6709\x7528\x7684\x4e1c\x897f\x3002"
+    KARTE                   L"\x85cf\x5b9d\x56fe"
+    KARTEGEFUNDEN           L"\x5728\x53e4\x8001\x7684\x6d77\x76d7\x8239\x91cc\x627e\x5230\x4e86\x85cf\x5b9d\x56fe\x548c\x94f2\x5b50\xff01\x0020\x002f\x007a\x0020\x6253\x5f00\x85cf\x5b9d\x56fe\xff0c\x5bf9\x7167\x5c9b\x5c7f\x5730\x5f62\xff0c\x5728\x5e73\x5766\x7a7a\x5730\x4e0a\x6316\x6398\x3002"
+    ANIMATIONAUS            L"\x5173\x95ed\x573a\x666f\x52a8\x753b"
+    ANIMATIONAN             L"\x5f00\x542f\x573a\x666f\x52a8\x753b"
+    ASTPLUSLIANENICHTS      L"\x5df2\x7ecf\x5236\x4f5c\x8fc7\x9493\x7aff\xff0c\x8fd9\x7ec4\x6750\x6599\x6ca1\x6709\x5176\x4ed6\x914d\x65b9\x3002"
+    SCHLEUDER               L"\x6295\x77f3\x7d22"
+    STEINPLUSLIANENICHTS    L"\x5df2\x7ecf\x5236\x4f5c\x8fc7\x6295\x77f3\x7d22\xff0c\x8fd9\x7ec4\x6750\x6599\x6ca1\x6709\x5176\x4ed6\x914d\x65b9\x3002"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    BAUESCHLEUDER           L"\x6295\x77f3\x7d22\x5236\x4f5c\x5b8c\x6210\xff01\x73b0\x5728\x53ef\x4ee5\x5728\x666e\x901a\x6811\x6728\x9644\x8fd1\x730e\x9e1f\xff0c\x8865\x5145\x98df\x7269\x3002"
+    KEINVOGEL               L"\x8fd9\x91cc\x6ca1\x6709\x9002\x5408\x72e9\x730e\x7684\x9e1f\x7c7b\x3002\x53bb\x666e\x901a\x6811\x6728\x9644\x8fd1\x8bd5\x8bd5\x3002"
+    BEGINNSCHLEUDER         L"\x730e\x9e1f"
+    NICHTAUFWASSERSCHLAFEN  L"\x5c0f\x8239\x4e0a\x65e0\x6cd5\x5b89\x5168\x4f11\x606f\xff0c\x8bf7\x5148\x9760\x5cb8\x3002"
+    WELLENZUHOCH            L"\x6d77\x6d6a\x906e\x4f4f\x4e86\x89c6\x7ebf\xff0c\x8bf7\x9760\x5cb8\x540e\x518d\x773a\x671b\x3002"
+    GRABENBEDINGUNGEN       L"\x53ea\x80fd\x5728\x5e73\x5766\x3001\x6ca1\x6709\x5efa\x7b51\x6216\x6811\x6728\x7684\x7a7a\x5730\x4e0a\x6316\x6398\x3002"
+    FELDBEDINGUNGEN         L"\x519c\x7530\x9700\x8981\x5e73\x5766\x3001\x6e7f\x6da6\x4e14\x6ca1\x6709\x969c\x788d\x7269\x7684\x8349\x5730\x3002"
+    ZELTBEDINGUNGEN         L"\x5e10\x7bf7\x9700\x8981\x4e00\x5757\x5e73\x5766\x4e14\x6ca1\x6709\x969c\x788d\x7269\x7684\x9646\x5730\x3002"
+    BOOTBEDINGUNGEN         L"\x72ec\x6728\x821f\x9700\x8981\x5728\x6ca1\x6709\x969c\x788d\x7269\x7684\x6c99\x6ee9\x4e0a\x5236\x4f5c\x3002"
+    ROHRBEDINGUNGEN         L"\x6c34\x7ba1\x9700\x8981\x94fa\x8bbe\x5728\x5e73\x5766\x4e14\x6ca1\x6709\x969c\x788d\x7269\x7684\x7a7a\x5730\x4e0a\x3002"
+    SOSBEDINGUNGEN          L"\x6c42\x6551\x6807\x8bb0\x9700\x8981\x5e73\x5766\x7a7a\x5730\xff0c\x5efa\x5728\x6c99\x6ee9\x4e0a\x66f4\x5bb9\x6613\x88ab\x53d1\x73b0\x3002"
+    FEUERSTELLENBEDINGUNGEN L"\x7bdd\x706b\x5806\x9700\x8981\x4e00\x5757\x5e73\x5766\x4e14\x6ca1\x6709\x969c\x788d\x7269\x7684\x7a7a\x5730\x3002"
+    BOOTHILFE               L"\x72ec\x6728\x821f\x5b8c\x6210\x4e86\xff01\x70b9\x51fb\x201c\x4e0a\x8239\xff0f\x9760\x5cb8\x201d\x4f7f\x7528\x3002\x9760\x5cb8\x5904\x5fc5\x987b\x6ca1\x6709\x969c\x788d\x7269\x3002\x0020\x002f\x007a\x0020\x52a1\x5fc5\x5728\x508d\x665a\x516d\x70b9\x524d\x56de\x5230\x9646\x5730\xff0c\x65e0\x6cd5\x5728\x6d77\x4e0a\x8fc7\x591c\x3002"
+    FELDHILFE               L"\x519c\x7530\x5b8c\x6210\x4e86\xff01\x4f5c\x7269\x4f1a\x968f\x65f6\x95f4\x751f\x957f\xff0c\x6210\x719f\x53d8\x9ec4\x540e\x5373\x53ef\x6536\x83b7\x8fdb\x98df\x3002"
+    FEUERSTELLEHILFE        L"\x7bdd\x706b\x5806\x5b8c\x6210\x4e86\xff01\x8fd8\x9700\x8981\x627e\x5230\x706b\x67f4\x624d\x80fd\x70b9\x71c3\x3002\x0020\x002f\x007a\x0020\x4fe1\x53f7\x7bdd\x706b\x53ef\x4ee5\x63d0\x9ad8\x83b7\x6551\x673a\x4f1a\xff0c\x5efa\x5728\x9ad8\x5904\x6548\x679c\x66f4\x597d\x3002"
+    HAUS3HILFE              L"\x6811\x5c4b\x5b8c\x6210\x4e86\xff01\x5728\x8fd9\x91cc\x4f11\x606f\x548c\x8fc7\x591c\xff0c\x53ef\x4ee5\x6062\x590d\x751f\x547d\x3002\x0020\x002f\x007a\x0020\x508d\x665a\x516d\x70b9\x524d\x56de\x5230\x6811\x5c4b\x9644\x8fd1\xff0c\x89d2\x8272\x4f1a\x81ea\x52a8\x5bfb\x627e\x9644\x8fd1\x7684\x5e87\x62a4\x6240\x3002"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ROHRHILFE               L"\x704c\x6e89\x6c34\x7ba1\x5b8c\x6210\x4e86\xff01\x4e0e\x6cb3\x6d41\x8fde\x901a\x540e\xff0c\x5468\x56f4\x8349\x5730\x4f1a\x53d8\x5f97\x6e7f\x6da6\xff0c\x53ef\x4ee5\x5f00\x57a6\x519c\x7530\x3002\x0020\x002f\x007a\x0020\x62c6\x9664\x4f9b\x6c34\x6c34\x7ba1\x540e\xff0c\x4f9d\x8d56\x5b83\x7684\x519c\x7530\x4e5f\x4f1a\x67af\x840e\x3002"
+    SOSHILFE                L"\x6c42\x6551\x6807\x8bb0\x5b8c\x6210\x4e86\xff01\x5b83\x80fd\x5e2e\x52a9\x8fc7\x5f80\x8239\x53ea\x6216\x98de\x673a\x53d1\x73b0\x4f60\x3002\x0020\x002f\x007a\x0020\x5728\x6c99\x6ee9\x4e0a\x94fa\x8bbe\xff0c\x6548\x679c\x4f1a\x66f4\x597d\x3002"
+    ZELTHILFE               L"\x5e10\x7bf7\x5b8c\x6210\x4e86\xff01\x73b0\x5728\x53ef\x4ee5\x5728\x8fd9\x91cc\x4f11\x606f\x3002\x0020\x002f\x007a\x0020\x60f3\x5728\x5e10\x7bf7\x4e2d\x8fc7\x591c\xff0c\x8bf7\x5728\x508d\x665a\x516d\x70b9\x524d\x56de\x5230\x9644\x8fd1\x3002"
+    SPIELVERLASSEN          L"\x8981\x4fdd\x5b58\x8fdb\x5ea6\x5e76\x79bb\x5f00\x6e38\x620f\x5417\xff1f\x0020\x002f\x0064\x0020"
+    BEENDEN                 L"\x4fdd\x5b58\x5e76\x9000\x51fa"
+    NEUBEGINNEN             L"\x8981\x5f00\x59cb\x65b0\x7684\x65c5\x7a0b\x5417\xff1f\x5f53\x524d\x65c5\x7a0b\x5c06\x88ab\x65b0\x7684\x5c9b\x5c7f\x53d6\x4ee3\x3002\x0020\x002f\x0064\x0020"
+    NEU                     L"\x65b0\x7684\x65c5\x7a0b"
+    TAGNEU                  L"\x8981\x4ece\x4eca\x5929\x65e9\x6668\x7684\x5b58\x6863\x91cd\x65b0\x5f00\x59cb\x5417\xff1f\x0020\x002f\x0064\x0020"
+    TOD                     L"\x8eab\x4f53\x5df2\x7ecf\x652f\x6491\x4e0d\x4f4f\x4e86\x3002\x0020\x002f\x007a\x0020\x8fd9\x6b21\x65c5\x7a0b\x7ed3\x675f\x4e86\xff0c\x8bd5\x7740\x91cd\x65b0\x5b89\x6392\x98df\x7269\x3001\x996e\x6c34\x4e0e\x5e87\x62a4\x6240\x3002"
+    TAGENDE5                L"\x7b2c\x0020\x002f\x0061\x0020\x5929\x7ed3\x675f\x4e86\x3002\x751f\x547d\x5df2\x7ecf\x8017\x5c3d\xff0c\x6ca1\x80fd\x5ea6\x8fc7\x8fd9\x4e2a\x591c\x665a\x3002"
+    TAGNEU2                 L"\x91cd\x65b0\x5f00\x59cb\x8fd9\x4e00\x5929"
+    SOUNDAN                 L"\x5f00\x542f\x58f0\x97f3"
+    SOUNDAUS                L"\x5173\x95ed\x58f0\x97f3"
+    KEINSOUND               L"\x58f0\x97f3\x8bbe\x5907\x4e0d\x53ef\x7528"
+END
+
+#endif    // Deutsch (Deutschland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

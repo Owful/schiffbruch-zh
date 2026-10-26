@@ -1,0 +1,28 @@
+#pragma once
+
+#include <iosfwd>
+#include <string>
+
+namespace Expedition
+{
+    struct Info {int water=0,bandages=0,signal=0,explored=0;bool stages[5]{};bool waterskin=false;};
+    Info GetInfo();
+    void Reset();
+    void Save(std::ostream& out);
+    void Load(std::istream& in);
+    void OnTime(int minutes, int startingHour);
+    void OnSearch();
+    void UseWaterskin();
+    bool NearFreshwater();void FillWaterskin();void DrinkWaterskin();
+    void UseBandage();
+    bool CraftWaterskin();
+    bool CraftBandage();
+    void ToggleJournal();
+    void ToggleEffects();
+    void ToggleHud();
+    void DrawAtmosphere();
+    void DrawHud();
+    void Notify(const wchar_t* text);
+    void CollectTimber();
+    std::wstring CurrentNotice();
+}

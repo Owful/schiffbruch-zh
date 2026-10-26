@@ -1,0 +1,25 @@
+# IDE Output
+.vscode/
+.idea/
+.vs/
+
+# Build Files
+out/
+CMakeSettings.json
+*.aps
+
+# Temp Files
+bin/save.dat
+bin/save.dat.tmp
+build*/
+install/
+qa*/
+
+# Local records and player data
+*.log
+bin/save.dat*
+bin/legacy-save.dat
+*.user
+*.suo
+.tools/
+dist/

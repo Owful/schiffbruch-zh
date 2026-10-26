@@ -1,0 +1,42 @@
+name: 游戏问题反馈
+description: 报告可以重复出现的游戏问题
+title: "[问题] 简述遇到的情况"
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先确认使用的是 Releases 中的最新预览版。上传截图前请检查是否含有个人信息；不要上传 save.dat。
+  - type: input
+    id: version
+    attributes:
+      label: 游戏版本
+      placeholder: v0.1.0-preview.1
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: Windows 11 64 位
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 重现步骤
+      description: 从启动游戏开始，依次写出点击或按键操作。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+    validations:
+      required: true
