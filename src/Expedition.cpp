@@ -97,14 +97,14 @@ namespace Expedition
         struct Fonts
         {
             HFONT body=CreateFontW(-16,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Microsoft YaHei UI");
-            HFONT small=CreateFontW(-13,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Microsoft YaHei UI");
+            HFONT compact=CreateFontW(-13,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Microsoft YaHei UI");
             HFONT title=CreateFontW(-23,0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Microsoft YaHei UI");
-            ~Fonts(){DeleteObject(body);DeleteObject(small);DeleteObject(title);}
+            ~Fonts(){DeleteObject(body);DeleteObject(compact);DeleteObject(title);}
         };
         void text(HDC dc,int x,int y,const wchar_t* str,COLORREF color=Muted,int size=0)
         {
             static Fonts fonts;
-            auto old=SelectObject(dc,size==1?fonts.small:size==2?fonts.title:fonts.body);
+            auto old=SelectObject(dc,size==1?fonts.compact:size==2?fonts.title:fonts.body);
             SetBkMode(dc,TRANSPARENT);SetTextColor(dc,color);TextOutW(dc,x,y,str,static_cast<int>(std::wcslen(str)));SelectObject(dc,old);
         }
         void stroke(HDC dc,int x1,int y1,int x2,int y2,COLORREF color,int width=1)

@@ -8,7 +8,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.1"
+VERSION = "v0.1.0-preview.2"
 NAME = f"Schiffbruch-ZH-{VERSION}"
 DOCUMENTS = (
     "README.md",
@@ -67,13 +67,14 @@ def main():
     parser.add_argument("--runtime", type=Path, required=True, help="Playable installation directory")
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument("--verify-build", type=Path, help="Release executable to compare byte for byte")
+    parser.add_argument("--executable", type=Path, help="Validated executable to package without changing the player's installation")
     args = parser.parse_args()
     runtime = args.runtime.resolve()
     output = args.output.resolve()
-    exe = runtime / "bin" / "Schiffbruch.exe"
+    exe = (args.executable or runtime / "bin" / "Schiffbruch.exe").resolve()
     if not exe.is_file():
         parser.error(f"Missing release executable: {exe}")
-    build = args.verify_build or ROOT / "build-release" / "Schiffbruch.exe"
+    build = (args.verify_build or ROOT / "build-release" / "Schiffbruch.exe").resolve()
     if build.exists() and exe.read_bytes() != build.read_bytes():
         parser.error("Runtime executable differs from validated Release build")
     cache = ROOT / "build-release" / "CMakeCache.txt"
@@ -84,7 +85,7 @@ def main():
     binaries = [path for path in (runtime / "bin").iterdir() if path.is_file() and path.suffix.lower() in {".exe", ".dll"}]
     if len([path for path in binaries if path.suffix.lower() == ".dll"]) < 4:
         parser.error("Runtime dependencies appear incomplete")
-    runtime_entries = [(path, f"漂流之境-交互修正版/bin/{path.name}") for path in binaries]
+    runtime_entries = [(exe if path.name == "Schiffbruch.exe" else path, f"漂流之境-交互修正版/bin/{path.name}") for path in binaries]
     for folder in ("images", "sounds"):
         runtime_entries.extend((path, f"漂流之境-交互修正版/bin/{folder}/{path.name}") for path in (ROOT / "bin" / folder).iterdir() if path.is_file())
     runtime_entries.extend((ROOT / name, f"漂流之境-交互修正版/{name}") for name in DOCUMENTS)
