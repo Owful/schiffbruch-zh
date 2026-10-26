@@ -8,12 +8,13 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.2"
+VERSION = "v0.1.0-preview.3"
 NAME = f"Schiffbruch-ZH-{VERSION}"
 DOCUMENTS = (
     "README.md",
     "README.upstream.md",
     "CHANGELOG.md",
+    "THIRD_PARTY.md",
     "IMPROVEMENTS.zh-CN.md",
     "验证记录.md",
     "行动与制作对照.md",
@@ -102,6 +103,13 @@ def main():
         destination = output / filename
         count = checked_archive(destination, entries)
         results.append((destination, count))
+    openal_source = output / "OpenAL-Soft-1.18.1-source.zip"
+    if not openal_source.is_file():
+        parser.error(f"Missing official OpenAL Soft source archive: {openal_source}")
+    with zipfile.ZipFile(openal_source) as archive:
+        if archive.testzip() is not None or not any(name.endswith("/COPYING") for name in archive.namelist()):
+            parser.error("OpenAL Soft source archive lacks a valid COPYING file")
+        results.append((openal_source, len(archive.namelist())))
     checksums = output / "SHA256SUMS.txt"
     checksums.write_text("".join(f"{sha256(path)}  {path.name}\n" for path, _ in results), encoding="ascii")
     for path, count in results:

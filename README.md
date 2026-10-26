@@ -52,6 +52,6 @@
 
 ## 来源与许可
 
-原游戏由 **Dirk Plate** 创作；Windows C++ 移植由 **Lukas Dürrenberger（eXpl0it3r）** 开发。本改进版在该移植的基础上调整中文文本、界面、交互、渲染与生存机制。原作者信息见 [原项目说明](README.upstream.md)，原仓库见 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)。
+原游戏由 **Dirk Plate** 创作；Windows C++ 移植由 **Lukas Dürrenberger（eXpl0it3r）** 开发；原仓库将游戏音乐署名给 **Heiko Plate**。本改进版在该移植的基础上调整中文文本、界面、交互、渲染与生存机制。原作者信息见 [原项目说明](README.upstream.md)，原仓库见 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)。
 
-项目沿用 [Creative Commons Attribution 4.0 International](LICENSE)。随包依赖的许可文件位于 [licenses](licenses)。
+原项目以 [Creative Commons Attribution 4.0 International](LICENSE) 发布；本版保留原素材并标明改动。随包的 SFML、OpenAL Soft 和 C++ 运行库有各自的许可，详见 [第三方组件与源码](THIRD_PARTY.md)及 [licenses](licenses)。原作者与第三方库均未为本改进版背书。
