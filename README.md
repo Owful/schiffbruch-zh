@@ -8,7 +8,7 @@
 
 ## 下载与开始
 
-前往 [Releases](../../releases) 下载最新的 `windows-x64.zip`，完整解压后双击 **开始游戏.vbs**；如果系统禁止运行脚本，也可以直接打开 `bin/Schiffbruch.exe`。首次游玩选“新的旅程”。下载包内不包含个人存档。
+前往 [版本下载页](https://github.com/Owful/schiffbruch-zh/releases) 下载最新的 `Windows-x64.zip`，完整解压后双击 **开始游戏.vbs**；如果系统禁止运行脚本，也可以直接打开 `bin/Schiffbruch.exe`。首次游玩选“新的旅程”。下载包内不包含个人存档。
 
 旧版存档在 `bin/save.dat`。升级前先备份，再将它放入新版本的 `bin` 文件夹。交互修正版的旧档已做读取与再次保存验证；更早或不同架构的版本未承诺兼容。
 
