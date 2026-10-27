@@ -128,6 +128,18 @@ namespace Sound
         for(int id=1;id<COUNT;++id)
         {
             if(!loaded[id])continue;
+            if(id==LOG)
+            {
+                // The complete original clip owns the accented rhythm. Audio looping
+                // keeps its 0.615 s beat independent of frame rate and animation wraps.
+                const bool chopping=Guy.Aktiv&&Guy.Zustand==GUYFAELLEN;
+                levels[id]=AudioRules::gain(Wav[id].Volume,100,mix[Effects]);
+                players[id].setVolume(levels[id]);players[id].setPitch(1);
+                if(!chopping||Soundzustand<=0)StopSound(LOG);
+                else if(!focused||paused){if(players[id].getStatus()==sf::Sound::Playing)players[id].pause();}
+                else if(players[id].getStatus()!=sf::Sound::Playing)players[id].play();
+                continue;
+            }
             if(Wav[id].Loop)
             {
                 const float wanted=AudioRules::gain(Wav[id].Volume,int(target[id]),mix[bus(id)]);

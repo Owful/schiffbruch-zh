@@ -179,13 +179,18 @@ bool Application::checkRevision()
         ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
         for(auto& column:Scape)for(auto& tile:column){tile.Entdeckt=true;tile.Objekt=-1;}
         Guy.Pos={20,20};Scape[21][20].Objekt=MEERWELLEN;Scape[20][21].Objekt=FLUSS1;Scape[19][20].Objekt=BAUM1;
-        Sound::SetEnabled(true);Sound::SetMix(Sound::Effects,80);
+        Sound::SetEnabled(true);Sound::SetMix(Sound::Music,55);Sound::SetMix(Sound::Ambience,68);Sound::SetMix(Sound::Effects,80);
         require(Sound::Inspect().loaded==Sound::COUNT-1,"some redesigned audio assets did not decode");
         for(int i=0;i<60;++i)Sound::Update(16667,true,false);
         require(Sound::Inspect().ambience>0,"nearby water and trees did not enter the ambient mix");
         Sound::PlaySound(Sound::DRINK,50);
         require(std::abs(Sound::CurrentVolume(Sound::DRINK)-AudioRules::gain(Wav[Sound::DRINK].Volume,50,80))<.1f,"requested sound volume is ignored");
         Sound::Update(16667,false,false);require(!Sound::IsPlaying(Sound::DRINK),"focus loss did not pause an action sound");
+        Guy.Aktiv=true;Guy.Zustand=GUYFAELLEN;Sound::Update(16667,true,false);
+        require(Wav[Sound::LOG].Loop&&Sound::IsPlaying(Sound::LOG)&&Sound::CurrentVolume(Sound::LOG)>50,"original accented axe loop did not start");
+        Sound::Update(16667,true,true);require(!Sound::IsPlaying(Sound::LOG),"pause did not pause the original axe rhythm");
+        Sound::Update(16667,true,false);require(Sound::IsPlaying(Sound::LOG),"axe rhythm did not resume after pause");
+        Guy.Aktiv=false;Guy.Zustand=GUYLINKS;Sound::Update(16667,true,false);require(!Sound::IsPlaying(Sound::LOG),"stopped chopping left the axe loop playing");
         Sound::SetEnabled(false);require(Sound::Inspect().playing==0,"mute left an audio player running");
         Sound::SetEnabled(true);Sound::Update(16667,true,false);
         Guy.Resource[WASSER]=50;Guy.Inventar[ROHBLATT]=Guy.Inventar[ROHLIANE]=10;Expedition::CraftWaterskin();Expedition::FillWaterskin();

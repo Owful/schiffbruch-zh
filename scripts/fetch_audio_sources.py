@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import urllib.request
 import zipfile
+import subprocess
 
 SOURCES = {
     "kenney-rpg.zip": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
@@ -13,6 +14,9 @@ SOURCES = {
     "birds.wav": "https://opengameart.org/sites/default/files/park_ambience_birds.wav",
     "river.wav": "https://opengameart.org/sites/default/files/park_ambience_river.wav",
     "rain.zip": "https://opengameart.org/sites/default/files/Rain%20OGG.zip",
+    "eating.zip": "https://opengameart.org/sites/default/files/crunch_-_tito.zip",
+    "drinks.7z": "https://opengameart.org/sites/default/files/qubodup-bottle-and-drink-sounds.7z",
+    "original-axe.wav": "https://raw.githubusercontent.com/eXpl0it3r/Schiffbruch/master/bin/sounds/faellen.wav",
 }
 
 def main():
@@ -35,13 +39,20 @@ def main():
     with ThreadPoolExecutor(max_workers=3) as pool:
         records = list(pool.map(fetch, SOURCES.items()))
     (args.directory / "sources.json").write_text(json.dumps(records, indent=2), encoding="utf-8")
-    for archive, folder in (("kenney-rpg.zip", "kenney"), ("rain.zip", "rain")):
+    for archive, folder in (("kenney-rpg.zip", "kenney"), ("rain.zip", "rain"), ("eating.zip", "eating")):
         destination = (args.directory / folder).resolve()
         with zipfile.ZipFile(args.directory / archive) as package:
             for name in package.namelist():
                 if not (destination / name).resolve().is_relative_to(destination):
                     raise ValueError("Archive member leaves the source directory")
             package.extractall(destination)
+    destination = (args.directory / "drinks").resolve()
+    destination.mkdir(exist_ok=True)
+    archive = (args.directory / "drinks.7z").resolve()
+    members = subprocess.check_output(["tar", "-tf", str(archive)], text=True).splitlines()
+    if any(not (destination / name).resolve().is_relative_to(destination) for name in members):
+        raise ValueError("Archive member leaves the drink source directory")
+    subprocess.run(["tar", "-xf", str(archive), "-C", str(destination)], check=True)
 
 if __name__ == "__main__":
     main()

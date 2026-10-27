@@ -37,9 +37,9 @@
     },
     {
       "file": "faellen.wav",
-      "seconds": 0.55,
-      "peak_dbfs": -3.74,
-      "rms_dbfs": -26.89,
+      "seconds": 0.6153,
+      "peak_dbfs": -1.94,
+      "rms_dbfs": -26.72,
       "boundary_delta": 0.0
     },
     {
@@ -94,8 +94,8 @@
     {
       "file": "eat.wav",
       "seconds": 0.65,
-      "peak_dbfs": -3.74,
-      "rms_dbfs": -25.97,
+      "peak_dbfs": -6.02,
+      "rms_dbfs": -32.05,
       "boundary_delta": 0.0
     },
     {
@@ -122,8 +122,8 @@
     {
       "file": "trinken.wav",
       "seconds": 1.12,
-      "peak_dbfs": -7.77,
-      "rms_dbfs": -21.41,
+      "peak_dbfs": -6.02,
+      "rms_dbfs": -32.27,
       "boundary_delta": 0.0
     },
     {

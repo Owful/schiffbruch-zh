@@ -1,7 +1,7 @@
-"""Render the island sound set from documented CC0 foley and original synthesis.
+"""Render the island sound set from documented recordings and original synthesis.
 
 Requires NumPy and ffmpeg. Raw sources are fetched by fetch_audio_sources.py.
-No old game audio is sampled. Seeds and source filenames make this reproducible.
+The axe preserves the original CC BY recording; other audio uses documented CC0 sources.
 """
 import argparse
 import hashlib
@@ -88,10 +88,30 @@ def resonance(seconds, frequency, decay=.15):
     return fade(tone, .001, .02)
 
 
+def refined_actions(sources, read):
+    """Keep the old axe cadence; use real mouth recordings for eating/drinking."""
+    original = filter_audio(read(sources / "original-axe.wav"), 65, 4400)
+    axe = fade(original + filter_audio(original, 65, 350) * .25, .003, .012)
+    eating_path = next((sources / "eating").rglob("crunch.5.ogg"))
+    bite = filter_audio(read(eating_path, .5, .25), 140, 2400)
+    food = np.zeros((round(.65 * RATE), 2))
+    place(food, fade(bite, .015, .08), .035)
+    drink = np.zeros((round(1.12 * RATE), 2))
+    for filename, at, gain in (("swallow-03.flac", .12, 1), ("swallow-01.flac", .65, .65)):
+        path = next((sources / "drinks").rglob(filename))
+        place(drink, fade(filter_audio(read(path), 100, 3100), .008, .04), at, gain)
+    return (
+        ("faellen.wav", axe, "original axe rhythm and accented wood strike, lightly cleaned", ["Schiffbruch original faellen.wav (CC BY 4.0)"], True, .15, .8),
+        ("eat.wav", food, "quiet real bite and chewing", ["Tito / StarNinjas crunch.5 (CC0)"], False, .055, .5),
+        ("trinken.wav", drink, "two quiet real swallows", ["qubodup swallow-03 and swallow-01 (CC0)"], False, .06, .5),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sources", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--only-actions", action="store_true", help="Render only the three corrected action sounds")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     ffmpeg = shutil.which("ffmpeg")
@@ -120,11 +140,19 @@ def main():
         command += ["-c:a", "libvorbis", "-q:a", "5"] if name.endswith(".ogg") else ["-c:a", "pcm_s16le"]
         subprocess.run(command + [str(destination)], input=data.astype("<f4").tobytes(), check=True)
         MANIFEST.append({"file": name, "purpose": purpose, "sources": sources, "loop": looping,
+                         "license": "CC-BY-4.0" if name == "faellen.wav" else "CC0-1.0",
                          "seconds": round(len(data) / RATE, 4), "peak_dbfs": round(20 * np.log10(max(np.max(np.abs(data)), 1e-9)), 2),
                          "rms_dbfs": round(20 * np.log10(max(np.sqrt(np.mean(data ** 2)), 1e-9)), 2),
                          "sha256": hashlib.sha256(destination.read_bytes()).hexdigest()})
         print(f"Rendered {name}: {len(data)/RATE:.2f}s", flush=True)
         return data
+
+    for entry in refined_actions(args.sources, read):
+        export(*entry)
+    if args.only_actions:
+        inputs = json.loads((args.sources / "sources.json").read_text(encoding="utf-8"))
+        (args.output / "audio-manifest.json").write_text(json.dumps({"sample_rate": RATE, "channels": 2, "old_audio_sampled": True, "inputs": inputs, "assets": MANIFEST}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return
 
     sea = filter_audio(read(args.sources / "sea.flac"), 65, 5800)
     river = filter_audio(read(args.sources / "river.wav", 22, 2), 90, 6200)
@@ -148,7 +176,6 @@ def main():
     leather = filter_audio(kenney("handleSmallLeather"), 120, 5500)
     creak = filter_audio(kenney("creak2"), 70, 4600)
     step = filter_audio(kenney("footstep04"), 80, 4600)
-    export("faellen.wav", fit(chop, .55), "axe into wood", ["Kenney chop"], rms=.13)
     hit = fit(chop, .48, 1.15) * .55 + resonance(.48, 1250, .075) * .08
     export("schlagen.wav", hit, "stone tool shaping", ["Kenney chop", "original synthesis"], rms=.11)
     export("hammer.wav", fit(chop, .44, 1.25) * .65 + resonance(.44, 420, .08) * .1, "wooden hammer", ["Kenney chop", "original synthesis"], rms=.12)
@@ -157,8 +184,6 @@ def main():
     export("knistern.wav", fit(cloth, .8, .8) + fit(leather, .8) * .2, "searching and binding material", ["Kenney cloth2 and handleSmallLeather"], rms=.075)
     export("step.wav", fit(step, .32, 1.05), "quiet ground footfall", ["Kenney footstep04"], rms=.085)
     export("bandage.wav", fit(cloth, 1.8, .75) * .65 + fit(leather, 1.8, .65) * .25, "cloth wrapping a wound", ["Kenney cloth2 and handleSmallLeather"], rms=.075)
-    food = fit(kenney("cloth4"), .65, 1.25) * .3 + fit(kenney("cloth1"), .65, 1.4) * .3
-    export("eat.wav", food, "soft berry handling and eating", ["Kenney cloth1 and cloth4"], rms=.055)
 
     splash = fit(filter_audio(sea, 140, 7200), 1.0, 1.05)
     export("platsch.wav", fade(splash, .035, .45), "small water splash", ["jasinski sea recording"], rms=.12)
@@ -169,14 +194,6 @@ def main():
     fill_water = fade(fit(river, 1.5) * .8, .12, .3)
     place(fill_water, fit(leather, .35), 0, .3)
     export("fill.wav", fill_water, "filling the waterskin", ["Thimras river recording", "Kenney handleSmallLeather"], rms=.10)
-    drink = np.zeros((round(1.12 * RATE), 2))
-    place(drink, fit(leather, .3), 0, .25)
-    for at, frequency in ((.18, 430), (.45, 360), (.72, 470)):
-        t = samples(.21)
-        bubble = np.sin(2 * np.pi * (frequency * t + 140 * t * t)) * np.exp(-t / .06)
-        place(drink, fade(bubble, .008, .03), at, .16)
-        place(drink, fade(fit(river, .16, 1.15), .02, .08), at, .3)
-    export("trinken.wav", drink, "three small water gulps", ["Thimras river recording", "Kenney handleSmallLeather", "original synthesis"], rms=.085)
     fish = np.zeros((round(.7 * RATE), 2))
     place(fish, fit(leather, .25), 0, .25)
     place(fish, fade(fit(splash, .45), .02, .22), .2, .5)
@@ -244,7 +261,7 @@ def main():
         export(name, out, purpose, ["original synthesis"], rms=.05 if len(notes) < 3 else .075)
 
     inputs = json.loads((args.sources / "sources.json").read_text(encoding="utf-8")) if (args.sources / "sources.json").exists() else []
-    manifest = {"sample_rate": RATE, "channels": 2, "old_audio_sampled": False, "inputs": inputs, "assets": MANIFEST}
+    manifest = {"sample_rate": RATE, "channels": 2, "old_audio_sampled": True, "inputs": inputs, "assets": MANIFEST}
     (args.output / "audio-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # Short, quieter showcase for review; no per-gameplay mixing is baked into assets.
     preview = np.zeros((RATE * 24, 2))

@@ -1,7 +1,7 @@
 {
   "sample_rate": 44100,
   "channels": 2,
-  "old_audio_sampled": false,
+  "old_audio_sampled": true,
   "assets": [
     {
       "file": "brandung.ogg",
@@ -13,7 +13,8 @@
       "seconds": 21.2,
       "peak_dbfs": -3.74,
       "rms_dbfs": -22.4,
-      "sha256": "02a80c2658a9f2522ac873d001366bf6e7124e98b0ffdc2b5d1e456d781851a1"
+      "sha256": "02a80c2658a9f2522ac873d001366bf6e7124e98b0ffdc2b5d1e456d781851a1",
+      "license": "CC0-1.0"
     },
     {
       "file": "fluss.ogg",
@@ -25,7 +26,8 @@
       "seconds": 21.2,
       "peak_dbfs": -4.12,
       "rms_dbfs": -21.41,
-      "sha256": "1f085be887c5ba4a5e31d856438e5d336cdcc3c0a57781436684c2535ab208c8"
+      "sha256": "1f085be887c5ba4a5e31d856438e5d336cdcc3c0a57781436684c2535ab208c8",
+      "license": "CC0-1.0"
     },
     {
       "file": "wald.ogg",
@@ -37,7 +39,8 @@
       "seconds": 25.2,
       "peak_dbfs": -4.29,
       "rms_dbfs": -25.19,
-      "sha256": "fcaa12642bdf7296b46968f68cb30510278ea7821941e3c51ffec5a09c7c1dff"
+      "sha256": "fcaa12642bdf7296b46968f68cb30510278ea7821941e3c51ffec5a09c7c1dff",
+      "license": "CC0-1.0"
     },
     {
       "file": "rain.ogg",
@@ -49,7 +52,8 @@
       "seconds": 21.2,
       "peak_dbfs": -6.03,
       "rms_dbfs": -20.92,
-      "sha256": "15344866ffa970bd0f9e2ce6ae12df4b6877a296652c75772471bf9f05579b14"
+      "sha256": "15344866ffa970bd0f9e2ce6ae12df4b6877a296652c75772471bf9f05579b14",
+      "license": "CC0-1.0"
     },
     {
       "file": "sturm.ogg",
@@ -61,19 +65,21 @@
       "seconds": 18.2,
       "peak_dbfs": -7.01,
       "rms_dbfs": -21.94,
-      "sha256": "ac26644c0b19a61a063653c8b1d0f57eb10344df5f83d0c246d0f85c1c5d0c85"
+      "sha256": "ac26644c0b19a61a063653c8b1d0f57eb10344df5f83d0c246d0f85c1c5d0c85",
+      "license": "CC0-1.0"
     },
     {
       "file": "faellen.wav",
-      "purpose": "axe into wood",
+      "purpose": "original axe rhythm and accented wood strike, lightly cleaned",
       "sources": [
-        "Kenney chop"
+        "Schiffbruch original faellen.wav (CC BY 4.0)"
       ],
-      "loop": false,
-      "seconds": 0.55,
-      "peak_dbfs": -3.74,
-      "rms_dbfs": -26.89,
-      "sha256": "d72b075734c194aced2e592de4d97c5d1e3e4cb048c6f4ebac0ddafe2ee0b8b8"
+      "loop": true,
+      "license": "CC-BY-4.0",
+      "seconds": 0.6153,
+      "peak_dbfs": -1.94,
+      "rms_dbfs": -26.72,
+      "sha256": "09b3369154dbade3f93d3096fd4acf0af3bd4cc08a59c9702827cfc3b0f03f83"
     },
     {
       "file": "schlagen.wav",
@@ -86,7 +92,8 @@
       "seconds": 0.48,
       "peak_dbfs": -3.74,
       "rms_dbfs": -26.94,
-      "sha256": "eec8d0e603daf42ae63820c6bc85e66e209e27cfea9bfd67730ead73cfc9f5dc"
+      "sha256": "eec8d0e603daf42ae63820c6bc85e66e209e27cfea9bfd67730ead73cfc9f5dc",
+      "license": "CC0-1.0"
     },
     {
       "file": "hammer.wav",
@@ -99,7 +106,8 @@
       "seconds": 0.44,
       "peak_dbfs": -3.74,
       "rms_dbfs": -26.64,
-      "sha256": "b61dc94d8c99fcc2d713632ae66731f3023f26ac57d987a441706336a11bcb36"
+      "sha256": "b61dc94d8c99fcc2d713632ae66731f3023f26ac57d987a441706336a11bcb36",
+      "license": "CC0-1.0"
     },
     {
       "file": "schleuder.wav",
@@ -111,7 +119,8 @@
       "seconds": 0.42,
       "peak_dbfs": -3.74,
       "rms_dbfs": -22.36,
-      "sha256": "fe18ea26fcfb1af73363e1df8370ca9852527297d8523d2173d9635c3ea5bbbe"
+      "sha256": "fe18ea26fcfb1af73363e1df8370ca9852527297d8523d2173d9635c3ea5bbbe",
+      "license": "CC0-1.0"
     },
     {
       "file": "schaufeln.wav",
@@ -123,7 +132,8 @@
       "seconds": 0.75,
       "peak_dbfs": -3.74,
       "rms_dbfs": -26.63,
-      "sha256": "496efb8a6810dad4ed8c861a9c9a2e2c077d85989b2f05edf84413dca23326c4"
+      "sha256": "496efb8a6810dad4ed8c861a9c9a2e2c077d85989b2f05edf84413dca23326c4",
+      "license": "CC0-1.0"
     },
     {
       "file": "knistern.wav",
@@ -135,7 +145,8 @@
       "seconds": 0.8,
       "peak_dbfs": -3.74,
       "rms_dbfs": -27.42,
-      "sha256": "b80423f4b3254607222cf38f5e90b5aaabb41b323ad20eb95376e21fe0f5464f"
+      "sha256": "b80423f4b3254607222cf38f5e90b5aaabb41b323ad20eb95376e21fe0f5464f",
+      "license": "CC0-1.0"
     },
     {
       "file": "step.wav",
@@ -147,7 +158,8 @@
       "seconds": 0.32,
       "peak_dbfs": -3.74,
       "rms_dbfs": -25.48,
-      "sha256": "8ca8f5e01bfdd9b631344eb13c7af17fcaa0333a6d8e3bd361e6f2d92dd4be4c"
+      "sha256": "8ca8f5e01bfdd9b631344eb13c7af17fcaa0333a6d8e3bd361e6f2d92dd4be4c",
+      "license": "CC0-1.0"
     },
     {
       "file": "bandage.wav",
@@ -159,19 +171,21 @@
       "seconds": 1.8,
       "peak_dbfs": -3.74,
       "rms_dbfs": -30.66,
-      "sha256": "9b7ece86b96985f7c5ad20a6ca58dbbb8f907e922d87c236132641bf175e1fe3"
+      "sha256": "9b7ece86b96985f7c5ad20a6ca58dbbb8f907e922d87c236132641bf175e1fe3",
+      "license": "CC0-1.0"
     },
     {
       "file": "eat.wav",
-      "purpose": "soft berry handling and eating",
+      "purpose": "quiet real bite and chewing",
       "sources": [
-        "Kenney cloth1 and cloth4"
+        "Tito / StarNinjas crunch.5 (CC0)"
       ],
       "loop": false,
+      "license": "CC0-1.0",
       "seconds": 0.65,
-      "peak_dbfs": -3.74,
-      "rms_dbfs": -25.97,
-      "sha256": "767539db38bb667f07f3695eb525aafeab5cccba51144611cb63eacb545f18c5"
+      "peak_dbfs": -6.02,
+      "rms_dbfs": -32.05,
+      "sha256": "916c82a422b62a851d201cb92219bdccfd5a4fdce362c7ef2c6846d4474c96a6"
     },
     {
       "file": "platsch.wav",
@@ -183,7 +197,8 @@
       "seconds": 1.0,
       "peak_dbfs": -3.74,
       "rms_dbfs": -20.26,
-      "sha256": "f547a3a428e5d950b0912e5f1e9222e8da83208d2c94cffe70ff039c42ccb4a9"
+      "sha256": "f547a3a428e5d950b0912e5f1e9222e8da83208d2c94cffe70ff039c42ccb4a9",
+      "license": "CC0-1.0"
     },
     {
       "file": "schwimmen.wav",
@@ -195,7 +210,8 @@
       "seconds": 1.2,
       "peak_dbfs": -3.74,
       "rms_dbfs": -22.59,
-      "sha256": "53a487c4a65383af963a299d8a40b547a53909dd837fb4160b2177e2a4a0bf61"
+      "sha256": "53a487c4a65383af963a299d8a40b547a53909dd837fb4160b2177e2a4a0bf61",
+      "license": "CC0-1.0"
     },
     {
       "file": "fill.wav",
@@ -208,21 +224,21 @@
       "seconds": 1.5,
       "peak_dbfs": -3.74,
       "rms_dbfs": -27.07,
-      "sha256": "61e585caef1c5d7374cb3145f28b31daa88816fb3ae51a7879d7c0bfdf24b679"
+      "sha256": "61e585caef1c5d7374cb3145f28b31daa88816fb3ae51a7879d7c0bfdf24b679",
+      "license": "CC0-1.0"
     },
     {
       "file": "trinken.wav",
-      "purpose": "three small water gulps",
+      "purpose": "two quiet real swallows",
       "sources": [
-        "Thimras river recording",
-        "Kenney handleSmallLeather",
-        "original synthesis"
+        "qubodup swallow-03 and swallow-01 (CC0)"
       ],
       "loop": false,
+      "license": "CC0-1.0",
       "seconds": 1.12,
-      "peak_dbfs": -7.77,
-      "rms_dbfs": -21.41,
-      "sha256": "ee3fc71812566f16802efe1f923e8d9cb330797402890e697e82e8e67996a026"
+      "peak_dbfs": -6.02,
+      "rms_dbfs": -32.27,
+      "sha256": "101806df384776abffa9ed59ab64870b65564e189681249d6a85d78326b939da"
     },
     {
       "file": "angel.wav",
@@ -235,7 +251,8 @@
       "seconds": 0.7,
       "peak_dbfs": -3.74,
       "rms_dbfs": -30.16,
-      "sha256": "bc7c8cfb54ea55303e6b4ec172c58c9cd09d8d5934ee5d1f16e7c452538f234c"
+      "sha256": "bc7c8cfb54ea55303e6b4ec172c58c9cd09d8d5934ee5d1f16e7c452538f234c",
+      "license": "CC0-1.0"
     },
     {
       "file": "baumfaellt.wav",
@@ -248,7 +265,8 @@
       "seconds": 2.5,
       "peak_dbfs": -3.74,
       "rms_dbfs": -29.85,
-      "sha256": "c62e3c3cb9d24e900912e4fbadc4af77a0515c7a029756002347ccb93eab26bc"
+      "sha256": "c62e3c3cb9d24e900912e4fbadc4af77a0515c7a029756002347ccb93eab26bc",
+      "license": "CC0-1.0"
     },
     {
       "file": "crash.wav",
@@ -261,7 +279,8 @@
       "seconds": 3.2,
       "peak_dbfs": -3.74,
       "rms_dbfs": -30.69,
-      "sha256": "dcfdd9a096a9a5046f3bb4ad3dc5ae6f301fd1efe9b5217b0a3cdd67829a1bf2"
+      "sha256": "dcfdd9a096a9a5046f3bb4ad3dc5ae6f301fd1efe9b5217b0a3cdd67829a1bf2",
+      "license": "CC0-1.0"
     },
     {
       "file": "feuer.ogg",
@@ -273,7 +292,8 @@
       "seconds": 13.2,
       "peak_dbfs": -3.74,
       "rms_dbfs": -25.28,
-      "sha256": "31d90e336038a00fecb16224a33c58a1c497b34a835a26451caf99bdd0f9c4ee"
+      "sha256": "31d90e336038a00fecb16224a33c58a1c497b34a835a26451caf99bdd0f9c4ee",
+      "license": "CC0-1.0"
     },
     {
       "file": "schnarchen.ogg",
@@ -285,7 +305,8 @@
       "seconds": 6.8,
       "peak_dbfs": -9.23,
       "rms_dbfs": -29.12,
-      "sha256": "1fb58c786fa4e530dfe4359642a3cbaed940414f5ec6180509c2a729baaa27d2"
+      "sha256": "1fb58c786fa4e530dfe4359642a3cbaed940414f5ec6180509c2a729baaa27d2",
+      "license": "CC0-1.0"
     },
     {
       "file": "wolf.wav",
@@ -297,7 +318,8 @@
       "seconds": 1.75,
       "peak_dbfs": -19.75,
       "rms_dbfs": -26.94,
-      "sha256": "583d35bf4807d96cd2ec3aa363fc57caecf7518a9ccadc32b3e1f93927433c64"
+      "sha256": "583d35bf4807d96cd2ec3aa363fc57caecf7518a9ccadc32b3e1f93927433c64",
+      "license": "CC0-1.0"
     },
     {
       "file": "logo.ogg",
@@ -309,7 +331,8 @@
       "seconds": 53.3333,
       "peak_dbfs": -7.25,
       "rms_dbfs": -21.41,
-      "sha256": "7fb80fe8b0d8e0bd4a5b2cc364e154682106c096cffbbc7ab70553344e3cc29f"
+      "sha256": "7fb80fe8b0d8e0bd4a5b2cc364e154682106c096cffbbc7ab70553344e3cc29f",
+      "license": "CC0-1.0"
     },
     {
       "file": "abspann.ogg",
@@ -321,7 +344,8 @@
       "seconds": 40.0,
       "peak_dbfs": -7.76,
       "rms_dbfs": -21.41,
-      "sha256": "c9dbd09bf601529074264105c9037dda9ef966443747dcd5e6ffe78435d3211e"
+      "sha256": "c9dbd09bf601529074264105c9037dda9ef966443747dcd5e6ffe78435d3211e",
+      "license": "CC0-1.0"
     },
     {
       "file": "klick.wav",
@@ -333,7 +357,8 @@
       "seconds": 0.13,
       "peak_dbfs": -18.19,
       "rms_dbfs": -26.02,
-      "sha256": "56ea30c435482eea08a3641f78a9232cdffbdf91c1c8e5d8158ee986f963e011"
+      "sha256": "56ea30c435482eea08a3641f78a9232cdffbdf91c1c8e5d8158ee986f963e011",
+      "license": "CC0-1.0"
     },
     {
       "file": "klick2.wav",
@@ -345,7 +370,8 @@
       "seconds": 0.25,
       "peak_dbfs": -16.45,
       "rms_dbfs": -26.02,
-      "sha256": "1cfd5c3970ccfe0e2f0a4fdcc444e6ab604cee57efd9891a5ca2d399bf498410"
+      "sha256": "1cfd5c3970ccfe0e2f0a4fdcc444e6ab604cee57efd9891a5ca2d399bf498410",
+      "license": "CC0-1.0"
     },
     {
       "file": "erfindung.wav",
@@ -357,7 +383,8 @@
       "seconds": 1.05,
       "peak_dbfs": -10.64,
       "rms_dbfs": -22.5,
-      "sha256": "571985a9b7a8f102dc77490135a29d3ed269716122edc0443000c5b5da4a5c37"
+      "sha256": "571985a9b7a8f102dc77490135a29d3ed269716122edc0443000c5b5da4a5c37",
+      "license": "CC0-1.0"
     }
   ],
   "inputs": [
@@ -385,6 +412,21 @@
       "file": "rain.zip",
       "url": "https://opengameart.org/sites/default/files/Rain%20OGG.zip",
       "sha256": "e68f3e1c77493cf43bec84cebff5043bff6be9ce16d59b24caa988cd460aa75b"
+    },
+    {
+      "file": "eating.zip",
+      "url": "https://opengameart.org/sites/default/files/crunch_-_tito.zip",
+      "sha256": "92017d0e4130d5b3fb4622ae9c17f4b4c099f5fdd08ea7c3322cea9e0b81f85f"
+    },
+    {
+      "file": "drinks.7z",
+      "url": "https://opengameart.org/sites/default/files/qubodup-bottle-and-drink-sounds.7z",
+      "sha256": "6d2b9dade6ff4c20cbe2b2a7c405cd219b901bfce7045b28f5ba8b8683c7a5e7"
+    },
+    {
+      "file": "original-axe.wav",
+      "url": "https://raw.githubusercontent.com/eXpl0it3r/Schiffbruch/master/bin/sounds/faellen.wav",
+      "sha256": "350de98c84c8658d472883ee7a10f7a869469faf060fbf847803c58adaaacda4"
     }
   ]
 }

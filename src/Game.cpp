@@ -2283,9 +2283,9 @@ namespace Game
         struct Asset{const char* file;short level;bool loop;};
         static const Asset assets[]={
             {"sturm.ogg",65,true},{"schwimmen.wav",55,true},{"platsch.wav",65,false},
-            {"faellen.wav",68,false},{"schlagen.wav",62,false},{"schleuder.wav",58,false},
+            {"faellen.wav",82,true},{"schlagen.wav",62,false},{"schleuder.wav",58,false},
             {"schaufeln.wav",58,false},{"hammer.wav",65,false},{"crash.wav",65,false},
-            {"schnarchen.ogg",40,true},{"trinken.wav",65,false},{"knistern.wav",55,false},
+            {"schnarchen.ogg",40,true},{"trinken.wav",62,false},{"knistern.wav",55,false},
             {"angel.wav",58,false},{"wald.ogg",64,true},{"feuer.ogg",65,true},
             {"brandung.ogg",64,true},{"baumfaellt.wav",70,false},{"fluss.ogg",65,true},
             {"klick.wav",46,false},{"klick2.wav",46,false},{"logo.ogg",70,true},
