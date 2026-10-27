@@ -17,5 +17,7 @@
   "focus_and_grid":true,
   "river_and_sea_animation":true,
   "audio_assets_and_mixer":true,
+  "silent_ui_clicks":true,
+  "nonblocking_dusk_and_critical_pause":true,
   "passed":true
 }

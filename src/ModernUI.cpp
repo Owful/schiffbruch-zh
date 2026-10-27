@@ -19,6 +19,7 @@
 #include "SceneView.hpp"
 #include "Nightfall.hpp"
 #include "Construction.hpp"
+#include "DuskNotice.hpp"
 #include "State.hpp"
 #include <SFML/Window.hpp>
 #include <array>
@@ -37,6 +38,7 @@ namespace ModernUI
         std::size_t overlayStart=0;
         bool paused=false,settings=false,craft=false,journal=false,quit=false,confirmNew=false;
         int safety=0;
+        DuskNotice::State duskNotice;
         int selection=-1;
         int craftCategory=0,craftOffset=0;
         HDC active=nullptr;
@@ -239,6 +241,11 @@ namespace ModernUI
         txt(24,82,L"已探索 "+std::to_wstring(info.explored)+L"% · 救援进度 "+std::to_wstring(info.signal)+L"%",13,GOLD);
         txt(24,106,L"单击地面移动 · 右键拖动视角 · E 就近互动",13,MUTED);
         txt(812,214,L"缩放 "+std::to_wstring(int(SceneView::Scale()*100+.5f))+L"% · 滚轮调整",13,MUTED);
+        if(duskNotice.visible(GetTickCount64()))
+        {
+            fill(440,83,330,38,BG);fill(440,83,3,38,GOLD);
+            txt(454,93,duskNotice.atSea?L"天快黑了，请尽快靠岸。":L"天快黑了，记得准备过夜。",15,GOLD);
+        }
         const auto spoken=Nightfall::Line();if(!spoken.empty())
         {
             const auto p=SceneView::ToScreen(Guy.PosScreen.x-Camera.x,Guy.PosScreen.y-Camera.y);
@@ -261,10 +268,12 @@ namespace ModernUI
         end();
     }
     bool OverlayActive(){return safety||paused||journal||confirmNew||Spielzustand==State::LOGO||Spielzustand==State::OUTRO;}
+    bool DuskNoticeVisible(){return duskNotice.visible(GetTickCount64());}
     void CheckSafety()
     {
         if(PapierText!=-1)return;
         Survival::Update();const int alert=Survival::TakeAlert();if(!alert)return;
+        if(alert==2){duskNotice.show(GetTickCount64(),BootsFahrt);return;}
         safety=alert;
         if(alert==1){Crafting::Cancel(false);Interaction::Cancel();
         if(Guy.Aktion!=Action::DEATH&&Guy.Aktion!=Action::DAY_END&&(Guy.Aktiv||Guy.Aktion!=Action::NOTHING))
@@ -273,7 +282,7 @@ namespace ModernUI
     bool ShouldQuit(){return quit;}
     void StartGame(bool fresh)
     {
-        paused=false;settings=false;journal=false;craft=false;safety=0;Survival::Reset();Interaction::Cancel();NativeDisplay::SetFade(1,1,1);
+        paused=false;settings=false;journal=false;craft=false;safety=0;duskNotice.reset();Survival::Reset();Interaction::Cancel();NativeDisplay::SetFade(1,1,1);
         Game::NeuesSpiel(fresh);
         LAnimation=true;for(int i=MEERWELLEN;i<=SCHLEUSE6;++i)Bmp[i].Animation=true;World::Generate();
         Crafting::SyncUnlocks();
@@ -315,10 +324,10 @@ namespace ModernUI
     {
         if(!paused&&!journal&&!confirmNew&&!safety)return;
         overlayStart=buttons.size();
-        begin(lpDDSBack);modalPanel(safety==1?L"生命危急 · 已自动暂停":safety==2?L"天色将晚 · 请准备过夜":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程");
+        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程");
         if(safety)
         {
-            txt(326,231,safety==1?L"当前行动已停止，请先处理生存需要。":L"距离入夜不足两小时，请尽快靠岸并返回庇护所。",16,GOLD);
+            txt(326,231,L"当前行动已停止，请先处理生存需要。",16,GOLD);
             const auto message=Survival::Advice();auto old=SelectObject(active,font(16));SetTextColor(active,FG);
             RECT r{326,280,940,423};DrawTextW(active,message.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX);SelectObject(active,old);
             txt(326,443,L"首次致命的日间消耗会保留 1 点生命，给你一次处理机会。",13,MUTED);
@@ -385,7 +394,7 @@ namespace ModernUI
         {
             const auto& b=buttons[n-1];if(!inside(x,y,b.rect))continue;
             auto fn=b.click;if(!b.enabled&&Spielzustand==State::LOGO)return true;
-            Sound::PlaySound(b.enabled?Sound::CLICK2:Sound::CLICK,100);fn();return true;
+            fn();return true;
         }
         if(OverlayActive()||x>=960||y<64||y>=656)return true;
         if(Crafting::Busy()||Nightfall::Pending())

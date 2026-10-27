@@ -175,12 +175,27 @@ bool Application::checkRevision()
             const auto first=hash();tile.Phase=1;Renderer::Zeige();require(hash()!=first,"water animation frames do not change rendered pixels");
             tile.Phase=0;bool advanced=false;for(int i=0;i<120&&!advanced;++i){++Bild;Math::Animationen();advanced=tile.Phase!=0;}require(advanced,"water animation scheduler is stopped");
         }
+        // Dusk must not pause the clock or interrupt work; life-threatening alerts still do.
+        ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();
+        Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
+        Guy.Inventar[ROHAXT]=0;Guy.Inventar[ROHAST]=Guy.Inventar[ROHSTEIN]=10;
+        Scape[Guy.Pos.x][Guy.Pos.y].Objekt=-1;BootsFahrt=false;Stunden=10;Minuten=0;
+        require(Crafting::Make(ROHAXT),"dusk reminder test could not start work");
+        ModernUI::CheckSafety();
+        require(ModernUI::DuskNoticeVisible()&&!ModernUI::OverlayActive()&&Crafting::Busy()&&Guy.Aktion==Action::CRAFT,"dusk reminder blocked or cancelled work");
+        Crafting::Update(250000,true);GameClock::Advance(200000,true);GameClock::Advance(200000,true);
+        require(Crafting::Job().fraction>0&&Minuten==1,"work or clock stopped while dusk reminder was visible");
+        Guy.Resource[GESUNDHEIT]=20;ModernUI::CheckSafety();
+        require(ModernUI::OverlayActive()&&!Crafting::Busy(),"critical health no longer pauses and stops work");
+
         // Exercise the production mixer and decoded assets in the isolated runtime.
         ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
         for(auto& column:Scape)for(auto& tile:column){tile.Entdeckt=true;tile.Objekt=-1;}
         Guy.Pos={20,20};Scape[21][20].Objekt=MEERWELLEN;Scape[20][21].Objekt=FLUSS1;Scape[19][20].Objekt=BAUM1;
         Sound::SetEnabled(true);Sound::SetMix(Sound::Music,55);Sound::SetMix(Sound::Ambience,68);Sound::SetMix(Sound::Effects,80);
         require(Sound::Inspect().loaded==Sound::COUNT-1,"some redesigned audio assets did not decode");
+        Sound::PlaySound(Sound::CLICK,100);Sound::PlaySound(Sound::CLICK2,100);
+        require(!Sound::IsPlaying(Sound::CLICK)&&!Sound::IsPlaying(Sound::CLICK2),"mouse click audio was still played");
         for(int i=0;i<60;++i)Sound::Update(16667,true,false);
         require(Sound::Inspect().ambience>0,"nearby water and trees did not enter the ambient mix");
         Sound::PlaySound(Sound::DRINK,50);
@@ -211,7 +226,7 @@ bool Application::checkRevision()
         ModernUI::DrawStart();ModernUI::HandleClick(600,548);ModernUI::DrawStart();ModernUI::HandleClick(150,350);
         require(Spielzustand==State::GAME&&!ModernUI::OverlayActive(),"sound settings return button did not restore the main menu controls");
         Sound::SetEnabled(false);
-        report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"passed\":true\n}\n";return true;
+        report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"silent_ui_clicks\":true,\n  \"nonblocking_dusk_and_critical_pause\":true,\n  \"passed\":true\n}\n";return true;
     }
     catch(const std::exception& error){report<<"\n  \"error\":\""<<error.what()<<"\",\"passed\":false\n}\n";return false;}
 }

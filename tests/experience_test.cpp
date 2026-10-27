@@ -1,6 +1,7 @@
 #include "Interaction.hpp"
 #include "Survival.hpp"
 #include "SurvivalRules.hpp"
+#include "DuskNotice.hpp"
 #include "Action.hpp"
 #include "State.hpp"
 #include "WeatherEffects.hpp"
@@ -89,6 +90,11 @@ int main()
     Guy.Resource[GESUNDHEIT]=60;Survival::Update();Guy.Resource[GESUNDHEIT]=20;Survival::Update();check(Survival::TakeAlert()==1,"recovered health rearms a later crisis");
     setup();Stunden=10;Survival::Update();check(Survival::TakeAlert()==2,"dusk warns before unsheltered night");
     Survival::Update();check(Survival::TakeAlert()==0,"dusk warning occurs once per day");
+    ++Tag;Survival::Update();check(Survival::TakeAlert()==2,"dusk notice can appear on a later day");
+    DuskNotice::State dusk;dusk.show(1000,false);
+    check(dusk.visible(1000)&&dusk.visible(5999)&&!dusk.visible(6000),"dusk notice lasts five seconds without needing dismissal");
+    dusk.show(7000,true);check(dusk.atSea&&dusk.visible(7000),"sea warning offers a relevant return-to-shore reminder");
+    dusk.reset();check(!dusk.visible(7000),"new game clears the old notice");
     setup();Stunden=10;Scape[10][10].Objekt=ZELT;Scape[10][10].Phase=0;Survival::Update();check(Survival::TakeAlert()==0,"safe shelter avoids unnecessary dusk interruption");
     setup();check(Survival::ProtectHealth(10,-2)==1&&Survival::TakeAlert()==1,"first lethal daytime damage preserves last chance and warns");
     check(Survival::ProtectHealth(1,-2)==1,"chained damage is protected until warning acknowledged");

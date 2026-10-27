@@ -17,4 +17,5 @@ namespace ModernUI
     void StartGame(bool fresh);
     void Interact();
     void CheckSafety();
+    bool DuskNoticeVisible();
 }

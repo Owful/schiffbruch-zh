@@ -83,6 +83,7 @@ namespace Sound
     }
     void PlaySound(short id,short volume)
     {
+        if(ui(id))return;
         if(!valid(id)||Soundzustand<=0||!hasFocus||(!actionsAllowed&&!ui(id)))return;
         // Environmental loops are driven once per frame by player position, never by drawing tiles.
         if(Wav[id].Loop)return;
