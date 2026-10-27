@@ -42,6 +42,7 @@
 - 七种工具、两种补给的制作与材料提示；水壶有独立装水和饮用按钮。
 - 喝水、装水和包扎各有不到两秒的短动作，完成后生效；制作保留人物动作并移除场景中的进度框。
 - 缩放、动态海水与溪流、分层雨效、砍伐所得提示，以及生命危急预警。
+- 重新制作29个音乐、环境与动作声音，支持环境渐变和独立音量；素材来源与许可见 [声音说明](AUDIO_CREDITS.md)。
 
 本版画面主要改进了显示方式、配色、天气和界面。人物与环境素材仍来自原作；新剧情、新场景和全新角色美术尚未做成可发布内容。
 
@@ -53,6 +54,6 @@
 
 ## 来源与许可
 
-原游戏由 **Dirk Plate** 创作；Windows C++ 移植由 **Lukas Dürrenberger（eXpl0it3r）** 开发；原仓库将游戏音乐署名给 **Heiko Plate**。本改进版在该移植的基础上调整中文文本、界面、交互、渲染与生存机制。原作者信息见 [原项目说明](README.upstream.md)，原仓库见 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)。
+原游戏由 **Dirk Plate** 创作；Windows C++ 移植由 **Lukas Dürrenberger（eXpl0it3r）** 开发；原仓库的历史音乐署名给 **Heiko Plate**。当前版本的重制音频见 [声音来源](AUDIO_CREDITS.md)。本改进版在该移植的基础上调整中文文本、界面、交互、渲染与生存机制。原作者信息见 [原项目说明](README.upstream.md)，原仓库见 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)。
 
 原项目以 [Creative Commons Attribution 4.0 International](LICENSE) 发布；本版保留原素材并标明改动。随包的 SFML、OpenAL Soft 和 C++ 运行库有各自的许可，详见 [第三方组件与源码](THIRD_PARTY.md)及 [licenses](licenses)。原作者与第三方库均未为本改进版背书。

@@ -8,13 +8,16 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.4"
+VERSION = "v0.1.0-preview.5"
 NAME = f"Schiffbruch-ZH-{VERSION}"
 DOCUMENTS = (
     "README.md",
     "README.upstream.md",
     "CHANGELOG.md",
     "THIRD_PARTY.md",
+    "AUDIO_CREDITS.md",
+    "audio-manifest.json",
+    "audio-validation.json",
     "IMPROVEMENTS.zh-CN.md",
     "验证记录.md",
     "行动与制作对照.md",

@@ -342,13 +342,20 @@ namespace ModernUI
         }
         else if(settings)
         {
-            txt(326,235,L"显示：可调整窗口大小，画面与点击位置会自动适配。",16,MUTED);
-            button(326,284,284,42,Soundzustand?L"声音：开启":L"声音：关闭",[]{if(Soundzustand){for(int i=1;i<Sound::COUNT;++i)Sound::StopSound(i);Soundzustand=0;}else Soundzustand=1;});
-            button(638,284,284,42,L"切换天气氛围",[]{Expedition::ToggleEffects();});
-            txt(342,356,L"水面动画：持续播放",16,GREEN);
-            button(638,345,284,42,Gitter?L"地块网格：开启":L"地块网格：关闭",[]{Gitter=!Gitter;if(Spielzustand==State::GAME)World::Generate();});
-            txt(326,420,L"操作：单击移动 · E互动 · B建造 · I背包 · C制作",13,MUTED);
-            txt(326,449,L"K水壶 · J绷带 · F1手记 · Esc暂停",13,MUTED);
+            button(326,231,284,40,Soundzustand>0?L"声音：开启":L"声音：关闭",[]{Sound::SetEnabled(Soundzustand<=0);});
+            button(638,231,284,40,L"切换天气氛围",[]{Expedition::ToggleEffects();});
+            button(638,283,284,40,Gitter?L"地块网格：开启":L"地块网格：关闭",[]{Gitter=!Gitter;if(Spielzustand==State::GAME)World::Generate();});
+            txt(342,294,L"水面动画：持续播放",14,GREEN);
+            const wchar_t* labels[]={L"音乐",L"环境",L"动作音效"};
+            for(int i=0;i<3;++i)
+            {
+                const auto channel=static_cast<Sound::Bus>(i);const int y=341+i*47;
+                txt(342,y+10,labels[i],16,FG);
+                txt(625,y+10,std::to_wstring(Sound::GetMix(channel))+L"%",15,GOLD);
+                button(734,y,72,35,L"−",[channel]{Sound::SetMix(channel,Sound::GetMix(channel)-10);},Sound::GetMix(channel)>0);
+                button(830,y,72,35,L"+",[channel]{Sound::SetMix(channel,Sound::GetMix(channel)+10);},Sound::GetMix(channel)<100);
+            }
+            txt(342,495,L"声音设置自动保留；切出窗口时会渐静。",13,MUTED);
             button(326,530,596,38,L"返回",[]{settings=false;paused=Spielzustand!=State::LOGO;});
         }
         else
@@ -378,7 +385,7 @@ namespace ModernUI
         {
             const auto& b=buttons[n-1];if(!inside(x,y,b.rect))continue;
             auto fn=b.click;if(!b.enabled&&Spielzustand==State::LOGO)return true;
-            fn();return true;
+            Sound::PlaySound(b.enabled?Sound::CLICK2:Sound::CLICK,100);fn();return true;
         }
         if(OverlayActive()||x>=960||y<64||y>=656)return true;
         if(Crafting::Busy()||Nightfall::Pending())

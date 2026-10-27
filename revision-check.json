@@ -16,5 +16,6 @@
   "remaining_material_shortage":true,
   "focus_and_grid":true,
   "river_and_sea_animation":true,
+  "audio_assets_and_mixer":true,
   "passed":true
 }

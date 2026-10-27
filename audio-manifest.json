@@ -1,0 +1,390 @@
+{
+  "sample_rate": 44100,
+  "channels": 2,
+  "old_audio_sampled": false,
+  "assets": [
+    {
+      "file": "brandung.ogg",
+      "purpose": "gentle coastal surf",
+      "sources": [
+        "jasinski sea recording"
+      ],
+      "loop": true,
+      "seconds": 21.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -22.4,
+      "sha256": "02a80c2658a9f2522ac873d001366bf6e7124e98b0ffdc2b5d1e456d781851a1"
+    },
+    {
+      "file": "fluss.ogg",
+      "purpose": "nearby fresh stream",
+      "sources": [
+        "Thimras river recording"
+      ],
+      "loop": true,
+      "seconds": 21.2,
+      "peak_dbfs": -4.12,
+      "rms_dbfs": -21.41,
+      "sha256": "1f085be887c5ba4a5e31d856438e5d336cdcc3c0a57781436684c2535ab208c8"
+    },
+    {
+      "file": "wald.ogg",
+      "purpose": "leaves and sparse birds",
+      "sources": [
+        "Thimras birds recording"
+      ],
+      "loop": true,
+      "seconds": 25.2,
+      "peak_dbfs": -4.29,
+      "rms_dbfs": -25.19,
+      "sha256": "fcaa12642bdf7296b46968f68cb30510278ea7821941e3c51ffec5a09c7c1dff"
+    },
+    {
+      "file": "rain.ogg",
+      "purpose": "steady rainfall",
+      "sources": [
+        "Ylmir rain recording"
+      ],
+      "loop": true,
+      "seconds": 21.2,
+      "peak_dbfs": -6.03,
+      "rms_dbfs": -20.92,
+      "sha256": "15344866ffa970bd0f9e2ce6ae12df4b6877a296652c75772471bf9f05579b14"
+    },
+    {
+      "file": "sturm.ogg",
+      "purpose": "storm wind and distant low thunder",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": true,
+      "seconds": 18.2,
+      "peak_dbfs": -7.01,
+      "rms_dbfs": -21.94,
+      "sha256": "ac26644c0b19a61a063653c8b1d0f57eb10344df5f83d0c246d0f85c1c5d0c85"
+    },
+    {
+      "file": "faellen.wav",
+      "purpose": "axe into wood",
+      "sources": [
+        "Kenney chop"
+      ],
+      "loop": false,
+      "seconds": 0.55,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.89,
+      "sha256": "d72b075734c194aced2e592de4d97c5d1e3e4cb048c6f4ebac0ddafe2ee0b8b8"
+    },
+    {
+      "file": "schlagen.wav",
+      "purpose": "stone tool shaping",
+      "sources": [
+        "Kenney chop",
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 0.48,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.94,
+      "sha256": "eec8d0e603daf42ae63820c6bc85e66e209e27cfea9bfd67730ead73cfc9f5dc"
+    },
+    {
+      "file": "hammer.wav",
+      "purpose": "wooden hammer",
+      "sources": [
+        "Kenney chop",
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 0.44,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.64,
+      "sha256": "b61dc94d8c99fcc2d713632ae66731f3023f26ac57d987a441706336a11bcb36"
+    },
+    {
+      "file": "schleuder.wav",
+      "purpose": "sling cord release",
+      "sources": [
+        "Kenney knifeSlice and cloth2"
+      ],
+      "loop": false,
+      "seconds": 0.42,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -22.36,
+      "sha256": "fe18ea26fcfb1af73363e1df8370ca9852527297d8523d2173d9635c3ea5bbbe"
+    },
+    {
+      "file": "schaufeln.wav",
+      "purpose": "soil scrape",
+      "sources": [
+        "Kenney footstep04 and cloth2"
+      ],
+      "loop": false,
+      "seconds": 0.75,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.63,
+      "sha256": "496efb8a6810dad4ed8c861a9c9a2e2c077d85989b2f05edf84413dca23326c4"
+    },
+    {
+      "file": "knistern.wav",
+      "purpose": "searching and binding material",
+      "sources": [
+        "Kenney cloth2 and handleSmallLeather"
+      ],
+      "loop": false,
+      "seconds": 0.8,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -27.42,
+      "sha256": "b80423f4b3254607222cf38f5e90b5aaabb41b323ad20eb95376e21fe0f5464f"
+    },
+    {
+      "file": "step.wav",
+      "purpose": "quiet ground footfall",
+      "sources": [
+        "Kenney footstep04"
+      ],
+      "loop": false,
+      "seconds": 0.32,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -25.48,
+      "sha256": "8ca8f5e01bfdd9b631344eb13c7af17fcaa0333a6d8e3bd361e6f2d92dd4be4c"
+    },
+    {
+      "file": "bandage.wav",
+      "purpose": "cloth wrapping a wound",
+      "sources": [
+        "Kenney cloth2 and handleSmallLeather"
+      ],
+      "loop": false,
+      "seconds": 1.8,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.66,
+      "sha256": "9b7ece86b96985f7c5ad20a6ca58dbbb8f907e922d87c236132641bf175e1fe3"
+    },
+    {
+      "file": "eat.wav",
+      "purpose": "soft berry handling and eating",
+      "sources": [
+        "Kenney cloth1 and cloth4"
+      ],
+      "loop": false,
+      "seconds": 0.65,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -25.97,
+      "sha256": "767539db38bb667f07f3695eb525aafeab5cccba51144611cb63eacb545f18c5"
+    },
+    {
+      "file": "platsch.wav",
+      "purpose": "small water splash",
+      "sources": [
+        "jasinski sea recording"
+      ],
+      "loop": false,
+      "seconds": 1.0,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -20.26,
+      "sha256": "f547a3a428e5d950b0912e5f1e9222e8da83208d2c94cffe70ff039c42ccb4a9"
+    },
+    {
+      "file": "schwimmen.wav",
+      "purpose": "two gentle swimming strokes",
+      "sources": [
+        "jasinski sea recording"
+      ],
+      "loop": false,
+      "seconds": 1.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -22.59,
+      "sha256": "53a487c4a65383af963a299d8a40b547a53909dd837fb4160b2177e2a4a0bf61"
+    },
+    {
+      "file": "fill.wav",
+      "purpose": "filling the waterskin",
+      "sources": [
+        "Thimras river recording",
+        "Kenney handleSmallLeather"
+      ],
+      "loop": false,
+      "seconds": 1.5,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -27.07,
+      "sha256": "61e585caef1c5d7374cb3145f28b31daa88816fb3ae51a7879d7c0bfdf24b679"
+    },
+    {
+      "file": "trinken.wav",
+      "purpose": "three small water gulps",
+      "sources": [
+        "Thimras river recording",
+        "Kenney handleSmallLeather",
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 1.12,
+      "peak_dbfs": -7.77,
+      "rms_dbfs": -21.41,
+      "sha256": "ee3fc71812566f16802efe1f923e8d9cb330797402890e697e82e8e67996a026"
+    },
+    {
+      "file": "angel.wav",
+      "purpose": "line and small water contact",
+      "sources": [
+        "Kenney handleSmallLeather",
+        "jasinski sea recording"
+      ],
+      "loop": false,
+      "seconds": 0.7,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.16,
+      "sha256": "bc7c8cfb54ea55303e6b4ec172c58c9cd09d8d5934ee5d1f16e7c452538f234c"
+    },
+    {
+      "file": "baumfaellt.wav",
+      "purpose": "wood bends, breaks and settles",
+      "sources": [
+        "Kenney creak2 and chop",
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 2.5,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -29.85,
+      "sha256": "c62e3c3cb9d24e900912e4fbadc4af77a0515c7a029756002347ccb93eab26bc"
+    },
+    {
+      "file": "crash.wav",
+      "purpose": "ship timber and water impact",
+      "sources": [
+        "Kenney creak2 and chop",
+        "jasinski sea recording"
+      ],
+      "loop": false,
+      "seconds": 3.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.69,
+      "sha256": "dcfdd9a096a9a5046f3bb4ad3dc5ae6f301fd1efe9b5217b0a3cdd67829a1bf2"
+    },
+    {
+      "file": "feuer.ogg",
+      "purpose": "small campfire and dry pops",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": true,
+      "seconds": 13.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -25.28,
+      "sha256": "31d90e336038a00fecb16224a33c58a1c497b34a835a26451caf99bdd0f9c4ee"
+    },
+    {
+      "file": "schnarchen.ogg",
+      "purpose": "quiet breathing during sleep",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": true,
+      "seconds": 6.8,
+      "peak_dbfs": -9.23,
+      "rms_dbfs": -29.12,
+      "sha256": "1fb58c786fa4e530dfe4359642a3cbaed940414f5ec6180509c2a729baaa27d2"
+    },
+    {
+      "file": "wolf.wav",
+      "purpose": "distant nocturnal bird",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 1.75,
+      "peak_dbfs": -19.75,
+      "rms_dbfs": -26.94,
+      "sha256": "583d35bf4807d96cd2ec3aa363fc57caecf7518a9ccadc32b3e1f93927433c64"
+    },
+    {
+      "file": "logo.ogg",
+      "purpose": "original quiet shore motif, 72 BPM",
+      "sources": [
+        "original composition and synthesis"
+      ],
+      "loop": true,
+      "seconds": 53.3333,
+      "peak_dbfs": -7.25,
+      "rms_dbfs": -21.41,
+      "sha256": "7fb80fe8b0d8e0bd4a5b2cc364e154682106c096cffbbc7ab70553344e3cc29f"
+    },
+    {
+      "file": "abspann.ogg",
+      "purpose": "original hopeful reprise",
+      "sources": [
+        "original composition and synthesis"
+      ],
+      "loop": true,
+      "seconds": 40.0,
+      "peak_dbfs": -7.76,
+      "rms_dbfs": -21.41,
+      "sha256": "c9dbd09bf601529074264105c9037dda9ef966443747dcd5e6ffe78435d3211e"
+    },
+    {
+      "file": "klick.wav",
+      "purpose": "muted wooden interface tap",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 0.13,
+      "peak_dbfs": -18.19,
+      "rms_dbfs": -26.02,
+      "sha256": "56ea30c435482eea08a3641f78a9232cdffbdf91c1c8e5d8158ee986f963e011"
+    },
+    {
+      "file": "klick2.wav",
+      "purpose": "soft confirmation",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 0.25,
+      "peak_dbfs": -16.45,
+      "rms_dbfs": -26.02,
+      "sha256": "1cfd5c3970ccfe0e2f0a4fdcc444e6ab604cee57efd9891a5ca2d399bf498410"
+    },
+    {
+      "file": "erfindung.wav",
+      "purpose": "tool ready, short wooden chime",
+      "sources": [
+        "original synthesis"
+      ],
+      "loop": false,
+      "seconds": 1.05,
+      "peak_dbfs": -10.64,
+      "rms_dbfs": -22.5,
+      "sha256": "571985a9b7a8f102dc77490135a29d3ed269716122edc0443000c5b5da4a5c37"
+    }
+  ],
+  "inputs": [
+    {
+      "file": "kenney-rpg.zip",
+      "url": "https://kenney.nl/media/pages/assets/rpg-audio/8e99002d76-1677590336/kenney_rpg-audio.zip",
+      "sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b"
+    },
+    {
+      "file": "sea.flac",
+      "url": "https://opengameart.org/sites/default/files/wave_01_cc0-18363__jasinski__alkaibeach.flac",
+      "sha256": "fcfca178eca2eac536e8c2a4ed5cf8096e44c921acd587047b3d9f1d7845435c"
+    },
+    {
+      "file": "birds.wav",
+      "url": "https://opengameart.org/sites/default/files/park_ambience_birds.wav",
+      "sha256": "dc1a5ac34b89cab7f8f261b53a23da7c1c5e3cc895aae4cb6fb4a1a04001b2af"
+    },
+    {
+      "file": "river.wav",
+      "url": "https://opengameart.org/sites/default/files/park_ambience_river.wav",
+      "sha256": "da0c0c9b1249a83a1611cc116d5737b0864a8db9f45f1ae8dcc079d0f7c0bbbf"
+    },
+    {
+      "file": "rain.zip",
+      "url": "https://opengameart.org/sites/default/files/Rain%20OGG.zip",
+      "sha256": "e68f3e1c77493cf43bec84cebff5043bff6be9ce16d59b24caa988cd460aa75b"
+    }
+  ]
+}

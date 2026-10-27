@@ -29,7 +29,7 @@ tests/localization_expected.inc 为中文期望值。localization_test 实际加
 
 ## 自动验证
 
-九组检查覆盖：
+十组检查覆盖：
 
 1. expedition_rules：天气、水分、火源、作物、信号和扩展存档规则。
 2. pixel_format：不同像素宽度、行跨度、颜色读写与调色。
@@ -40,6 +40,7 @@ tests/localization_expected.inc 为中文期望值。localization_test 实际加
 7. pace_view：行动耗时与饥渴缩放、半分钟累计、PAC1尾部、缩放前后坐标互逆、鼠标锚点及界面区域保持。
 8. crafting：全部配方产物与扣料、前置工具、动作解锁、已有工具防重复、探索物品不可凭空制造，以及制作补给不误用已有补给。
 9. realtime：固定走时、停表、日长、微秒余量存取、入夜工作收尾、短话、实际寻路入口、不可达/远处庇护所与剩余工程材料。
+10. audio_rules：请求音量与分类音量叠加、距离衰减、淡入淡出和动画触发去重。实际29个素材解码及混音器检查纳入原生--revision-check；音频分析结果见audio-validation.json，生成说明见docs/声音设计.md。
 
 --revision-check 在隔离运行目录生成四张原生岛屿，实际调用World时间、资源、制作及存档接口。它还在100%、140%、180%倍率下，经过ModernUI的点击入口验证浆果和淡水目标。放置一份交互修正版旧存档为legacy-save.dat时，会验证旧档读取和再次保存。该命令会写测试存档，应只在隔离目录使用。
 

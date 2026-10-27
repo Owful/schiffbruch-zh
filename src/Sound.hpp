@@ -2,6 +2,8 @@
 
 #include "headers.hpp"
 #include "extern.hpp"
+#include "SoundTypes.hpp"
+#include <cstdint>
 
 namespace Sound
 {
@@ -10,33 +12,9 @@ namespace Sound
     void PlaySound(short Sound, short Volume); // Spiel eine Wavedatei mit Prozentualer Lautstärke
     void StopSound(short Sound); // Stoppt ein Sound
 
-    enum Type
-    {
-        NOTHING = 0,
-        STORM = 1,
-        SWIM = STORM + 1,
-        SPLAT = STORM + 2,
-        LOG = STORM + 3,
-        HIT = STORM + 4,
-        SLINGSHOT = STORM + 5,
-        DIG = STORM + 6,
-        HAMMER = STORM + 7,
-        CRASH = STORM + 8,
-        SNORE = STORM + 9,
-        DRINK = STORM + 10,
-        CRACKLE = STORM + 11,
-        FISH = STORM + 12,
-        FOREST = 14,
-        FIRE = FOREST + 1,
-        SURF = FOREST + 2,
-        TIMBER = FOREST + 3,
-        RIVER = FOREST + 4,
-        CLICK = 19,
-        CLICK2 = CLICK + 1,
-        LOGO = CLICK + 2,
-        OUTRO = CLICK + 3,
-        WOLF = CLICK + 4,
-        INVENTION = CLICK + 5,
-        COUNT = INVENTION + 1, // Number of sounds
-    };
+    void Update(std::int64_t micros,bool focused,bool paused);
+    int GetMix(Bus bus);void SetMix(Bus bus,int level);void SetEnabled(bool enabled);
+    struct Snapshot {int loaded=0,playing=0;float music=0,ambience=0;};
+    Snapshot Inspect();
+    float CurrentVolume(short id);bool IsPlaying(short id);
 } // namespace Sound

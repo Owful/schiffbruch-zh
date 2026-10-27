@@ -1,6 +1,7 @@
 #pragma once
 
 #include "headers.hpp"
+#include <string>
 
 struct TEXTBEREICH
 {
@@ -52,7 +53,7 @@ struct BMP
 
 struct WAV
 {
-    char* Dateiname; // Dateiname der Wavdatei
+    std::string Dateiname;
     bool Loop; // Nur einmal abspielen und ständig
     short Volume; // Die Standardlautstärke in Prozent
 };

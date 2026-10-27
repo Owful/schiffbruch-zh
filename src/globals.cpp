@@ -72,7 +72,7 @@ ZWEID Camera, // aktueller Kartenausschnitt
 RGBSTRUCT rgbStruct; // Hier werden die Farben eines Pixels zwischengespeichert
 GUY Guy;
 BMP Bmp[BILDANZ];
-WAV Wav[25]; // Sound::COUNT
+WAV Wav[Sound::COUNT];
 ABSPANN AbspannListe[10][10]; // Namenabfolge im Abspann
 SCAPE Scape[MAXXKACH][MAXYKACH];
 

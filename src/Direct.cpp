@@ -356,10 +356,7 @@ namespace Direct
 
             if (soundKey)
             {
-                if (Soundzustand == 0)
-                    Soundzustand = 1;
-                else if (Soundzustand == 1)
-                    Soundzustand = 0;
+                Sound::SetEnabled(Soundzustand<=0);
             }
         }
         else if (Spielzustand == State::OUTRO)

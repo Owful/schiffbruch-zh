@@ -19,6 +19,7 @@ qa*/
 *.log
 bin/save.dat*
 bin/legacy-save.dat
+bin/audio-settings.cfg
 *.user
 *.suo
 .tools/

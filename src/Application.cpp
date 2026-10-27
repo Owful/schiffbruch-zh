@@ -23,6 +23,7 @@
 #include "ClockRules.hpp"
 #include "Nightfall.hpp"
 #include "Construction.hpp"
+#include "AudioRules.hpp"
 
 #include <ctime>
 #include <algorithm>
@@ -174,7 +175,38 @@ bool Application::checkRevision()
             const auto first=hash();tile.Phase=1;Renderer::Zeige();require(hash()!=first,"water animation frames do not change rendered pixels");
             tile.Phase=0;bool advanced=false;for(int i=0;i<120&&!advanced;++i){++Bild;Math::Animationen();advanced=tile.Phase!=0;}require(advanced,"water animation scheduler is stopped");
         }
-        report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"passed\":true\n}\n";return true;
+        // Exercise the production mixer and decoded assets in the isolated runtime.
+        ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
+        for(auto& column:Scape)for(auto& tile:column){tile.Entdeckt=true;tile.Objekt=-1;}
+        Guy.Pos={20,20};Scape[21][20].Objekt=MEERWELLEN;Scape[20][21].Objekt=FLUSS1;Scape[19][20].Objekt=BAUM1;
+        Sound::SetEnabled(true);Sound::SetMix(Sound::Effects,80);
+        require(Sound::Inspect().loaded==Sound::COUNT-1,"some redesigned audio assets did not decode");
+        for(int i=0;i<60;++i)Sound::Update(16667,true,false);
+        require(Sound::Inspect().ambience>0,"nearby water and trees did not enter the ambient mix");
+        Sound::PlaySound(Sound::DRINK,50);
+        require(std::abs(Sound::CurrentVolume(Sound::DRINK)-AudioRules::gain(Wav[Sound::DRINK].Volume,50,80))<.1f,"requested sound volume is ignored");
+        Sound::Update(16667,false,false);require(!Sound::IsPlaying(Sound::DRINK),"focus loss did not pause an action sound");
+        Sound::SetEnabled(false);require(Sound::Inspect().playing==0,"mute left an audio player running");
+        Sound::SetEnabled(true);Sound::Update(16667,true,false);
+        Guy.Resource[WASSER]=50;Guy.Inventar[ROHBLATT]=Guy.Inventar[ROHLIANE]=10;Expedition::CraftWaterskin();Expedition::FillWaterskin();
+        Sound::Update(16667,true,false);require(Sound::IsPlaying(Sound::FILL),"filling did not start its own sound");
+        Crafting::Cancel(false);Sound::Update(16667,true,false);require(!Sound::IsPlaying(Sound::FILL),"cancelled filling left its sound playing");
+        Expedition::FillWaterskin();finish();Expedition::DrinkWaterskin();Sound::Update(16667,true,false);
+        require(Sound::IsPlaying(Sound::DRINK),"waterskin animation did not start drinking audio");
+        Sound::Update(16667,true,true);require(!Sound::IsPlaying(Sound::DRINK),"pause did not pause the drinking sound");
+        Crafting::Cancel(false);Sound::Update(16667,true,false);
+        Spielzustand=State::LOGO;for(int i=0;i<160;++i)Sound::Update(16667,true,false);
+        require(Sound::Inspect().music>0&&Sound::Inspect().ambience<.2f,"leaving the island did not fade ambience into menu music");
+        ModernUI::DrawStart();ModernUI::HandleClick(160,476);ModernUI::DrawStart();
+        const int oldMusic=Sound::GetMix(Sound::Music),oldEnvironment=Sound::GetMix(Sound::Ambience);
+        ModernUI::HandleClick(862,355);ModernUI::DrawStart();ModernUI::HandleClick(760,402);
+        require(Sound::GetMix(Sound::Music)==std::min(100,oldMusic+10)&&Sound::GetMix(Sound::Ambience)==std::max(0,oldEnvironment-10),"visible sound mix buttons changed the wrong channel");
+        ModernUI::DrawStart();ModernUI::HandleClick(430,248);require(Soundzustand==0&&Sound::Inspect().playing==0,"visible mute button left audio running");
+        ModernUI::DrawStart();ModernUI::HandleClick(430,248);require(Soundzustand==1,"visible sound toggle did not reenable audio");
+        ModernUI::DrawStart();ModernUI::HandleClick(600,548);ModernUI::DrawStart();ModernUI::HandleClick(150,350);
+        require(Spielzustand==State::GAME&&!ModernUI::OverlayActive(),"sound settings return button did not restore the main menu controls");
+        Sound::SetEnabled(false);
+        report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"passed\":true\n}\n";return true;
     }
     catch(const std::exception& error){report<<"\n  \"error\":\""<<error.what()<<"\",\"passed\":false\n}\n";return false;}
 }
@@ -195,8 +227,8 @@ Application::Application(const std::string& name, HINSTANCE instance_handle)
     NativeDisplay::Bind(m_window);
     g_hInst = instance_handle;
 
+    Soundzustand = 1;
     Sound::Init();
-    Soundzustand = 1; // Activate sound
 
     Direct::InitDDraw(m_window.getSystemHandle());
 
@@ -306,6 +338,7 @@ void Application::run()
             if (Direct::CheckKey() == 0) { m_window.close(); break; }
             Renderer::ZeigeAbspann();
         }
+        Sound::Update(elapsed,m_window.hasFocus(),ModernUI::OverlayActive()||PapierText!=-1);
         const auto remaining = sf::milliseconds(16) - frame.getElapsedTime();
         if (remaining > sf::Time::Zero) sf::sleep(remaining);
     }

@@ -10,4 +10,4 @@
 
 `openal32.dll` 为独立 DLL，可由使用者替换。随包的 OpenAL Soft 源码档案取自官方 `openal-soft-1.18.1` 标签，包含构建文件与原始 `COPYING`。本项目未修改该 DLL 的源码。
 
-原作图像及声音来自 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)，文件保持原样。原项目将游戏署名给 Dirk Plate、C++ 移植署名给 Lukas Dürrenberger，并在说明中将音乐署名给 Heiko Plate；[原说明](README.upstream.md)随包保留。本版修改的范围见 [更新记录](CHANGELOG.md)。
+原作图像来自 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch)，图像文件保持原样。原项目将游戏署名给 Dirk Plate、C++ 移植署名给 Lukas Dürrenberger，并在说明中将历史音乐署名给 Heiko Plate；[原说明](README.upstream.md)随包保留。当前音频已全部重制，使用的CC0录音与新增合成素材见 [声音来源](AUDIO_CREDITS.md)。本版修改的范围见 [更新记录](CHANGELOG.md)。

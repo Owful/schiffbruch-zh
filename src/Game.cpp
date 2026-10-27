@@ -172,7 +172,7 @@ namespace Game
         Bmp[GUYESSEN].rcSrc.bottom = 17;
         Bmp[GUYESSEN].Breite = 7;
         Bmp[GUYESSEN].Hoehe = 17;
-        Bmp[GUYESSEN].Sound = Sound::CRACKLE;
+        Bmp[GUYESSEN].Sound = Sound::EAT;
 
         Bmp[GUYTRINKEN].Anzahl = 5;
         Bmp[GUYTRINKEN].Geschwindigkeit = 4;
@@ -220,6 +220,7 @@ namespace Game
         Bmp[GUYBINDENOBEN].rcSrc.bottom = 18;
         Bmp[GUYBINDENOBEN].Breite = 8;
         Bmp[GUYBINDENOBEN].Hoehe = 18;
+        Bmp[GUYBINDENOBEN].Sound = Sound::CRACKLE;
 
         Bmp[GUYBINDENUNTEN].Anzahl = 2;
         Bmp[GUYBINDENUNTEN].Geschwindigkeit = 1;
@@ -229,6 +230,7 @@ namespace Game
         Bmp[GUYBINDENUNTEN].rcSrc.bottom = 36 + 18;
         Bmp[GUYBINDENUNTEN].Breite = 7;
         Bmp[GUYBINDENUNTEN].Hoehe = 18;
+        Bmp[GUYBINDENUNTEN].Sound = Sound::CRACKLE;
 
         Bmp[GUYSCHLAFZELT].Anzahl = 2;
         Bmp[GUYSCHLAFZELT].Geschwindigkeit = 1;
@@ -2278,91 +2280,22 @@ namespace Game
 
     void InitWaves()
     {
-        // Sounds
-        for (short i = 0; i < Sound::COUNT; i++)
-        {
-            Wav[i].Dateiname = "sounds/klick.wav";
-            Wav[i].Loop = false;
-            Wav[i].Volume = 100;
-        }
-
-        Wav[Sound::STORM].Dateiname = "sounds/sturm.wav";
-        Wav[Sound::STORM].Volume = 85;
-
-        Wav[Sound::SWIM].Dateiname = "sounds/schwimmen.wav";
-        Wav[Sound::SWIM].Volume = 90;
-
-        Wav[Sound::SPLAT].Dateiname = "sounds/platsch.wav";
-        Wav[Sound::SPLAT].Volume = 95;
-
-        Wav[Sound::LOG].Dateiname = "sounds/faellen.wav";
-        Wav[Sound::LOG].Volume = 100;
-
-        Wav[Sound::HIT].Dateiname = "sounds/schlagen.wav";
-        Wav[Sound::HIT].Volume = 100;
-
-        Wav[Sound::SLINGSHOT].Dateiname = "sounds/schleuder.wav";
-        Wav[Sound::SLINGSHOT].Volume = 100;
-
-        Wav[Sound::DIG].Dateiname = "sounds/schaufeln.wav";
-        Wav[Sound::DIG].Volume = 90;
-
-        Wav[Sound::HAMMER].Dateiname = "sounds/hammer.wav";
-        Wav[Sound::HAMMER].Volume = 100;
-
-        Wav[Sound::CRASH].Dateiname = "sounds/crash.wav";
-        Wav[Sound::CRASH].Volume = 100;
-
-        Wav[Sound::SNORE].Dateiname = "sounds/schnarchen.wav";
-        Wav[Sound::SNORE].Volume = 90;
-
-        Wav[Sound::DRINK].Dateiname = "sounds/trinken.wav";
-        Wav[Sound::DRINK].Volume = 95;
-
-        Wav[Sound::CRACKLE].Dateiname = "sounds/knistern.wav";
-        Wav[Sound::CRACKLE].Volume = 90;
-
-        Wav[Sound::FISH].Dateiname = "sounds/angel.wav";
-        Wav[Sound::FISH].Volume = 100;
-
-        Wav[Sound::FOREST].Dateiname = "sounds/wald.wav";
-        Wav[Sound::FOREST].Volume = 90;
-
-        Wav[Sound::FIRE].Dateiname = "sounds/feuer.wav";
-        Wav[Sound::FIRE].Volume = 100;
-
-        Wav[Sound::SURF].Dateiname = "sounds/brandung.wav";
-        Wav[Sound::SURF].Volume = 100;
-
-        Wav[Sound::TIMBER].Dateiname = "sounds/baumfaellt.wav";
-        Wav[Sound::TIMBER].Volume = 100;
-
-        Wav[Sound::RIVER].Dateiname = "sounds/fluss.wav";
-        Wav[Sound::RIVER].Volume = 85;
-
-        Wav[Sound::CLICK].Dateiname = "sounds/klick.wav";
-        Wav[Sound::CLICK].Volume = 95;
-
-        Wav[Sound::CLICK2].Dateiname = "sounds/klick2.wav";
-        Wav[Sound::CLICK2].Volume = 95;
-
-        Wav[Sound::OUTRO].Dateiname = "sounds/abspann.wav";
-        Wav[Sound::OUTRO].Volume = 100;
-        Wav[Sound::OUTRO].Loop = true;
-
-        Wav[Sound::LOGO].Dateiname = "sounds/logo.wav";
-        Wav[Sound::LOGO].Volume = 100;
-        Wav[Sound::LOGO].Loop = true;
-
-        Wav[Sound::WOLF].Dateiname = "sounds/wolf.wav";
-        Wav[Sound::WOLF].Volume = 90;
-
-        Wav[Sound::INVENTION].Dateiname = "sounds/erfindung.wav";
-        Wav[Sound::INVENTION].Volume = 95;
-
-        // Testweise alle Sounds gleich in den Speicher laden
-        for (short i = 1; i < Sound::COUNT; i++)
-            Sound::LoadSound(i);
+        struct Asset{const char* file;short level;bool loop;};
+        static const Asset assets[]={
+            {"sturm.ogg",65,true},{"schwimmen.wav",55,true},{"platsch.wav",65,false},
+            {"faellen.wav",68,false},{"schlagen.wav",62,false},{"schleuder.wav",58,false},
+            {"schaufeln.wav",58,false},{"hammer.wav",65,false},{"crash.wav",65,false},
+            {"schnarchen.ogg",40,true},{"trinken.wav",65,false},{"knistern.wav",55,false},
+            {"angel.wav",58,false},{"wald.ogg",64,true},{"feuer.ogg",65,true},
+            {"brandung.ogg",64,true},{"baumfaellt.wav",70,false},{"fluss.ogg",65,true},
+            {"klick.wav",46,false},{"klick2.wav",46,false},{"logo.ogg",70,true},
+            {"abspann.ogg",70,true},{"wolf.wav",38,false},{"erfindung.wav",58,false},
+            {"fill.wav",62,false},{"bandage.wav",58,false},{"eat.wav",50,false},
+            {"step.wav",52,false},{"rain.ogg",65,true}
+        };
+        static_assert(sizeof(assets)/sizeof(assets[0])==Sound::COUNT-1,"Every sound has an explicit asset");
+        for(short id=1;id<Sound::COUNT;++id)
+        {Wav[id].Dateiname=std::string("sounds/")+assets[id-1].file;Wav[id].Volume=assets[id-1].level;Wav[id].Loop=assets[id-1].loop;Sound::LoadSound(id);}
     }
 
     void NeuesSpiel(bool neu)

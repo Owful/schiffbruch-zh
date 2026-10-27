@@ -215,17 +215,6 @@ namespace Renderer
                     || (Scape[x][y].Objekt == ROHR)
                     || (Scape[x][y].Objekt == SOS))
                 {
-                    // Sound abspielen
-                    if (Scape[x][y].Objekt != -1 &&
-                        ((Guy.Pos.x - 1 <= x) && (x <= Guy.Pos.x + 1)) &&
-                        ((Guy.Pos.y - 1 <= y) && (y <= Guy.Pos.y + 1)))
-                    {
-                        if ((x == Guy.Pos.x) && (y == Guy.Pos.y))
-                            Sound::PlaySound(Bmp[Scape[x][y].Objekt].Sound, 100);
-                        else if (Bmp[Scape[x][y].Objekt].Sound != Bmp[Scape[Guy.Pos.x][Guy.Pos.y].Objekt].Sound)
-                            Sound::PlaySound(Bmp[Scape[x][y].Objekt].Sound, 90);
-                    }
-
                     ZeichneBilder(Scape[x][y].xScreen + Scape[x][y].ObPos.x - Camera.x,
                                   Scape[x][y].yScreen + Scape[x][y].ObPos.y - Camera.y,
                                   Scape[x][y].Objekt, rcSpielflaeche, Scape[x][y].Reverse,
@@ -238,16 +227,6 @@ namespace Renderer
                         (Scape[x][y].Objekt == WRACK) || (Scape[x][y].Objekt == WRACK2) ||
                         (Scape[x][y].Objekt >= ZELT)) // Bäume und Früchte (und alle anderen Objekte) malen
                     {
-                        // Sound abspielen
-                        if (Scape[x][y].Objekt != -1 &&
-                            ((Guy.Pos.x - 1 <= x) && (x <= Guy.Pos.x + 1)) &&
-                            ((Guy.Pos.y - 1 <= y) && (y <= Guy.Pos.y + 1)))
-                        {
-                            if ((x == Guy.Pos.x) && (y == Guy.Pos.y))
-                                Sound::PlaySound(Bmp[Scape[x][y].Objekt].Sound, 100);
-                            else if (Bmp[Scape[x][y].Objekt].Sound != Bmp[Scape[Guy.Pos.x][Guy.Pos.y].Objekt].Sound)
-                                Sound::PlaySound(Bmp[Scape[x][y].Objekt].Sound, 90);
-                        }
                         if (Guyzeichnen)
                         {
                             if ((Guy.PosScreen.y) < (Scape[x][y].yScreen + Scape[x][y].ObPos.y
@@ -289,8 +268,6 @@ namespace Renderer
             ZeichneBilder(Guy.PosScreen.x - (Bmp[Guy.Zustand].Breite) / 2 - Camera.x,
                           Guy.PosScreen.y - (Bmp[Guy.Zustand].Hoehe) - Camera.y,
                           Guy.Zustand, rcSpielflaeche, false, -1);
-        // Sound abspielen
-        if (Guy.Aktiv) Sound::PlaySound(Bmp[Guy.Zustand].Sound, 100);
     }
 
     void ZeichnePapier(){ModernUI::DrawDialog();}

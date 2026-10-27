@@ -53,7 +53,8 @@ extern ZWEID Camera, // aktueller Kartenausschnitt
 extern RGBSTRUCT rgbStruct; // Hier werden die Farben eines Pixels zwischengespeichert
 extern GUY Guy;
 extern BMP Bmp[BILDANZ];
-extern WAV Wav[25]; // Sound::COUNT;
+#include "SoundTypes.hpp"
+extern WAV Wav[Sound::COUNT];
 extern ABSPANN AbspannListe[10][10]; // Namenabfolge im Abspann
 extern SCAPE Scape[MAXXKACH][MAXYKACH];
 

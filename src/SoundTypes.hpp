@@ -1,0 +1,11 @@
+#pragma once
+namespace Sound
+{
+    enum Type : short
+    {
+        NOTHING=0,STORM,SWIM,SPLAT,LOG,HIT,SLINGSHOT,DIG,HAMMER,CRASH,SNORE,
+        DRINK,CRACKLE,FISH,FOREST,FIRE,SURF,TIMBER,RIVER,CLICK,CLICK2,LOGO,
+        OUTRO,WOLF,INVENTION,FILL,BANDAGE,EAT,FOOTSTEP,RAIN,COUNT
+    };
+    enum Bus { Music=0,Ambience=1,Effects=2 };
+}

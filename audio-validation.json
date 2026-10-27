@@ -1,0 +1,208 @@
+{
+  "assets": [
+    {
+      "file": "brandung.ogg",
+      "seconds": 21.2027,
+      "peak_dbfs": -3.48,
+      "rms_dbfs": -22.58,
+      "boundary_delta": 0.012538
+    },
+    {
+      "file": "fluss.ogg",
+      "seconds": 21.2027,
+      "peak_dbfs": -4.84,
+      "rms_dbfs": -21.61,
+      "boundary_delta": 0.085771
+    },
+    {
+      "file": "wald.ogg",
+      "seconds": 25.2024,
+      "peak_dbfs": -4.72,
+      "rms_dbfs": -25.35,
+      "boundary_delta": 0.10733
+    },
+    {
+      "file": "rain.ogg",
+      "seconds": 21.2027,
+      "peak_dbfs": -5.82,
+      "rms_dbfs": -20.96,
+      "boundary_delta": 0.076365
+    },
+    {
+      "file": "sturm.ogg",
+      "seconds": 18.2015,
+      "peak_dbfs": -6.98,
+      "rms_dbfs": -22.14,
+      "boundary_delta": 0.074204
+    },
+    {
+      "file": "faellen.wav",
+      "seconds": 0.55,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.89,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "schlagen.wav",
+      "seconds": 0.48,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.94,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "hammer.wav",
+      "seconds": 0.44,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.64,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "schleuder.wav",
+      "seconds": 0.42,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -22.36,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "schaufeln.wav",
+      "seconds": 0.75,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -26.63,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "knistern.wav",
+      "seconds": 0.8,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -27.42,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "step.wav",
+      "seconds": 0.32,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -25.48,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "bandage.wav",
+      "seconds": 1.8,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.66,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "eat.wav",
+      "seconds": 0.65,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -25.97,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "platsch.wav",
+      "seconds": 1.0,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -20.26,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "schwimmen.wav",
+      "seconds": 1.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -22.59,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "fill.wav",
+      "seconds": 1.5,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -27.07,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "trinken.wav",
+      "seconds": 1.12,
+      "peak_dbfs": -7.77,
+      "rms_dbfs": -21.41,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "angel.wav",
+      "seconds": 0.7,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.16,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "baumfaellt.wav",
+      "seconds": 2.5,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -29.85,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "crash.wav",
+      "seconds": 3.2,
+      "peak_dbfs": -3.74,
+      "rms_dbfs": -30.69,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "feuer.ogg",
+      "seconds": 13.2005,
+      "peak_dbfs": -4.31,
+      "rms_dbfs": -25.53,
+      "boundary_delta": 0.04439
+    },
+    {
+      "file": "schnarchen.ogg",
+      "seconds": 6.8165,
+      "peak_dbfs": -9.45,
+      "rms_dbfs": -29.32,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "wolf.wav",
+      "seconds": 1.75,
+      "peak_dbfs": -19.75,
+      "rms_dbfs": -26.94,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "logo.ogg",
+      "seconds": 53.3493,
+      "peak_dbfs": -7.33,
+      "rms_dbfs": -21.39,
+      "boundary_delta": 0.00803
+    },
+    {
+      "file": "abspann.ogg",
+      "seconds": 40.021,
+      "peak_dbfs": -7.83,
+      "rms_dbfs": -21.4,
+      "boundary_delta": 0.010794
+    },
+    {
+      "file": "klick.wav",
+      "seconds": 0.13,
+      "peak_dbfs": -18.19,
+      "rms_dbfs": -26.02,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "klick2.wav",
+      "seconds": 0.25,
+      "peak_dbfs": -16.45,
+      "rms_dbfs": -26.02,
+      "boundary_delta": 0.0
+    },
+    {
+      "file": "erfindung.wav",
+      "seconds": 1.05,
+      "peak_dbfs": -10.64,
+      "rms_dbfs": -22.5,
+      "boundary_delta": 0.0
+    }
+  ],
+  "passed": true
+}
