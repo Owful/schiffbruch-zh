@@ -45,7 +45,23 @@ int main()
     Guy.Inventar[ROHBLATT]=10;Guy.Inventar[ROHLIANE]=10;
     check(make(Crafting::Bandage)&&make(Crafting::Bandage)&&Expedition::GetInfo().bandages==2&&Guy.Resource[2]==40,"making another bandage cannot silently consume a carried bandage or heal");
     check(make(Crafting::Bandage)&&!Crafting::Make(Crafting::Bandage)&&Expedition::GetInfo().bandages==3,"bandage capacity is enforced without further material loss");
-    Expedition::UseBandage();check(Expedition::GetInfo().bandages==2&&Guy.Resource[2]==60,"explicit bandage use remains a separate command");
+    Expedition::UseBandage();check(Crafting::UsingSupply()&&Guy.Resource[2]==40,"bandaging starts without instant healing");
+    Crafting::Update(250000,false);check(Crafting::Job().fraction==0,"paused supply action does not advance");
+    Crafting::Update(250000,true);Crafting::Cancel();check(Expedition::GetInfo().bandages==3&&Guy.Resource[2]==40,"cancelling bandage use preserves health and supply");
+    Expedition::UseBandage();while(Crafting::Busy())Crafting::Update(100000,true);
+    check(Expedition::GetInfo().bandages==2&&Guy.Resource[2]==60,"completed bandage use heals exactly once");
+    check(Crafting::DurationMicros(Crafting::DrinkWater)<Crafting::DurationMicros(Crafting::FillWater)&&Crafting::DurationMicros(Crafting::FillWater)<Crafting::DurationMicros(Crafting::ApplyBandage)&&Crafting::DurationMicros(Crafting::ApplyBandage)<2000000,"supply timings are distinct and under two seconds");
+    Scape[20][20].Objekt=FLUSS1;Expedition::FillWaterskin();
+    Expedition::FillWaterskin();check(Crafting::Job().fraction==0&&Expedition::GetInfo().water==0,"repeated refill clicks cannot duplicate or restart the task");
+    while(Crafting::Busy())Crafting::Update(100000,true);
+    check(Expedition::GetInfo().water==3,"refill grants stored water only after its action");
+    Guy.Resource[WASSER]=40;Expedition::DrinkWaterskin();Crafting::Update(250000,true);
+    const float drinkFraction=Crafting::Job().fraction;std::stringstream drinking;Crafting::Save(drinking);Crafting::Reset();
+    check(Crafting::Load(drinking)&&Crafting::UsingSupply()&&Crafting::Job().fraction==drinkFraction&&Guy.Zustand==GUYTRINKEN,"drinking resumes its animation from a save");
+    while(Crafting::Busy())Crafting::Update(100000,true);Crafting::Update(250000,true);
+    check(Expedition::GetInfo().water==2&&Guy.Resource[WASSER]==65,"saved drink consumes one charge and applies one effect");
+    Expedition::FillWaterskin();Scape[20][20].Objekt=-1;while(Crafting::Busy())Crafting::Update(100000,true);
+    check(Expedition::GetInfo().water==2,"refill rechecks that freshwater still exists at completion");
     Guy.Aktiv=true;Guy.Inventar[ROHAXT]=0;const int stone=Guy.Inventar[ROHSTEIN];check(!Crafting::Make(ROHAXT)&&Guy.Inventar[ROHSTEIN]==stone,"crafting while walking or working cannot mutate inventory");
     if(failures)return 1;std::cout<<"Crafting outputs, prerequisites, action unlocks and explicit consumable crafting passed.\n";
 }

@@ -101,10 +101,20 @@ bool Application::checkRevision()
         ModernUI::HandleKey(sf::Keyboard::C);click(1100,217);click(1200,260);
         require(Expedition::GetInfo().waterskin&&Expedition::GetInfo().water==0,"waterskin craft also filled or used water");
         Scape[Guy.Pos.x][Guy.Pos.y].Objekt=FLUSS1;Scape[Guy.Pos.x][Guy.Pos.y].Entdeckt=true;
-        click(1010,490);require(Expedition::GetInfo().water==3,"visible fill button did not fill waterskin");
-        Guy.Resource[WASSER]=50;click(1200,490);require(Expedition::GetInfo().water==2&&Guy.Resource[WASSER]==75,"visible drink button did not drink independently of filling");
+        ModernUI::DrawPanel();ModernUI::HandleClick(1010,490);
+        require(Crafting::UsingSupply()&&Expedition::GetInfo().water==0&&Guy.Zustand==GUYBINDENUNTEN,"fill button applied water before its animation");
+        finish();require(Expedition::GetInfo().water==3,"visible fill button did not fill waterskin");
+        Guy.Resource[WASSER]=50;ModernUI::DrawPanel();ModernUI::HandleClick(1200,490);
+        require(Crafting::UsingSupply()&&Guy.Zustand==GUYTRINKEN&&Guy.Resource[WASSER]==50&&Expedition::GetInfo().water==3,"drink button applied an instant effect");
+        Crafting::Update(250000,false);require(Crafting::Job().fraction==0,"paused drink still advances");
+        Crafting::Update(250000,true);Renderer::Zeige();require(Bmp[GUYTRINKEN].Phase==1,"drinking sprite does not advance");
+        Game::SaveGame();require(Game::LoadGame()&&Crafting::UsingSupply()&&Guy.Zustand==GUYTRINKEN,"native drinking save did not resume");
+        finish();require(Expedition::GetInfo().water==2&&Guy.Resource[WASSER]==75,"visible drink button did not drink independently of filling");
         Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=50;click(1200,356);click(1200,356);
         require(Expedition::GetInfo().bandages==2&&Guy.Resource[GESUNDHEIT]==50,"bandage card used supplies instead of crafting");
+        Direct::QueueKeyPress(sf::Keyboard::J);Direct::CheckKey();
+        require(Crafting::UsingSupply()&&Guy.Zustand==GUYBINDENOBEN&&Guy.Resource[GESUNDHEIT]==50,"bandage shortcut skipped its animation");finish();
+        require(Expedition::GetInfo().bandages==1&&Guy.Resource[GESUNDHEIT]==70,"bandage animation failed to apply one heal");
         ModernUI::HandleKey(sf::Keyboard::B);click(1010,166);click(1010,385);click(1200,260);
         require(Guy.Inventar[ROHFERNROHR]==0&&Expedition::CurrentNotice().find(L"沉船")!=std::wstring::npos,"locked lookout did not show salvage instructions");
         ModernUI::HandleWheel(1,1100,400);require(PaceRules::zoomStep==startZoom,"acquisition list changed scene zoom");
@@ -164,7 +174,7 @@ bool Application::checkRevision()
             const auto first=hash();tile.Phase=1;Renderer::Zeige();require(hash()!=first,"water animation frames do not change rendered pixels");
             tile.Phase=0;bool advanced=false;for(int i=0;i<120&&!advanced;++i){++Bild;Math::Animationen();advanced=tile.Phase!=0;}require(advanced,"water animation scheduler is stopped");
         }
-        report<<"  ],\n  \"panel_interactions\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"passed\":true\n}\n";return true;
+        report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"passed\":true\n}\n";return true;
     }
     catch(const std::exception& error){report<<"\n  \"error\":\""<<error.what()<<"\",\"passed\":false\n}\n";return false;}
 }

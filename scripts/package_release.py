@@ -8,7 +8,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.3"
+VERSION = "v0.1.0-preview.4"
 NAME = f"Schiffbruch-ZH-{VERSION}"
 DOCUMENTS = (
     "README.md",
@@ -90,6 +90,7 @@ def main():
     for folder in ("images", "sounds"):
         runtime_entries.extend((path, f"漂流之境-交互修正版/bin/{folder}/{path.name}") for path in (ROOT / "bin" / folder).iterdir() if path.is_file())
     runtime_entries.extend((ROOT / name, f"漂流之境-交互修正版/{name}") for name in DOCUMENTS)
+    runtime_entries.extend((path, f"漂流之境-交互修正版/{path.relative_to(ROOT).as_posix()}") for path in (ROOT / "docs").rglob("*") if path.is_file())
     runtime_entries.extend((path, f"漂流之境-交互修正版/licenses/{path.name}") for path in (ROOT / "licenses").iterdir() if path.is_file())
     runtime_entries.append((ROOT / "README.md", "漂流之境-交互修正版/bin/README.md"))
     runtime_entries.append((ROOT / "Start-Game.vbs", "漂流之境-交互修正版/开始游戏.vbs"))

@@ -1,5 +1,6 @@
 #include "Expedition.hpp"
 #include "ExpeditionRules.hpp"
+#include "Crafting.hpp"
 #include "extern.hpp"
 #include "Action.hpp"
 #include "State.hpp"
@@ -31,6 +32,7 @@ namespace
     }
     void setup()
     {
+        Crafting::Reset();
         Guy={};Guy.Pos={10,30};Guy.Aktion=Action::NOTHING;
         for(auto& v:Guy.Resource)v=70;
         for(auto& column:Scape)for(auto& t:column){t={};t.Art=1;t.Objekt=-1;}
@@ -39,6 +41,7 @@ namespace
         for(auto& b:Bmp)b.Anzahl=3;
         Expedition::Reset();
     }
+    void finish(){for(int i=0;i<60&&Crafting::Busy();++i)Crafting::Update(100000,true);check(!Crafting::Busy(),"supply action finishes promptly");}
 }
 int main()
 {
@@ -52,14 +55,17 @@ int main()
     Expedition::UseWaterskin();check(!current().waterskin&&Guy.Inventar[ROHBLATT]==2,"water shortcut never silently starts crafting");
     Expedition::CraftWaterskin();check(current().waterskin&&current().water==0&&Guy.Inventar[ROHBLATT]==0,"completed waterskin consumes exact materials");
     Scape[10][30].Objekt=FLUSS1;Expedition::UseWaterskin();
+    check(Crafting::UsingSupply()&&Guy.Zustand==GUYBINDENUNTEN&&current().water==0,"refill animates before filling");finish();
     check(current().water==3&&current().waterVisited,"river refills waterskin and records water milestone");
     Scape[10][30].Objekt=-1;const float before=Guy.Resource[WASSER];Expedition::UseWaterskin();
+    check(Guy.Zustand==GUYTRINKEN&&current().water==3&&Guy.Resource[WASSER]==before,"drinking does not apply an instant effect");finish();
     check(current().water==2&&Guy.Resource[WASSER]==before+25,"portable water improves thirst and consumes one charge");
     const int timeBefore=Minuten;Expedition::UseWaterskin();
     check(current().water==2&&Minuten==timeBefore,"high hydration preserves water and time");
     Guy.Inventar[ROHBLATT]=3;Guy.Inventar[ROHLIANE]=1;Expedition::CraftBandage();
     check(current().bandages==1&&Guy.Inventar[ROHBLATT]==0,"bandage crafting consumes materials");
-    Expedition::UseBandage();check(current().bandages==0&&Guy.Resource[GESUNDHEIT]==90,"bandage heals 20 and is consumed");
+    Expedition::UseBandage();check(current().bandages==1&&Guy.Zustand==GUYBINDENOBEN,"bandage waits for its binding animation");finish();
+    check(current().bandages==0&&Guy.Resource[GESUNDHEIT]==90,"bandage heals 20 and is consumed");
     Guy.Aktiv=true;Guy.Inventar[ROHBLATT]=3;Guy.Inventar[ROHLIANE]=1;Expedition::UseBandage();
     check(current().bandages==0&&Guy.Inventar[ROHBLATT]==3,"commands cannot interrupt a running action");Guy.Aktiv=false;
     const auto saved=current();std::stringstream data(std::ios::in|std::ios::out|std::ios::binary);Expedition::Save(data);

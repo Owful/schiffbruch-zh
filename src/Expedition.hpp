@@ -15,6 +15,7 @@ namespace Expedition
     void UseWaterskin();
     bool NearFreshwater();void FillWaterskin();void DrinkWaterskin();
     void UseBandage();
+    std::wstring SupplyProblem(int action);void CompleteSupplyAction(int action);
     bool CraftWaterskin();
     bool CraftBandage();
     void ToggleJournal();

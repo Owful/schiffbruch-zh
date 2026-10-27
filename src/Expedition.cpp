@@ -6,6 +6,7 @@
 #include "World.hpp"
 #include "State.hpp"
 #include "WeatherEffects.hpp"
+#include "Crafting.hpp"
 
 #include <algorithm>
 #include <array>
@@ -205,28 +206,43 @@ namespace Expedition
     }
     void FillWaterskin()
     {
-        if(!ready()){Notify(L"请先完成当前动作并关闭对话，再装水。");return;}
-        if(!progress.waterskin){Notify(L"还没有水壶，请打开“制作 → 补给”制作。");return;}
-        if(!NearFreshwater()){Notify(L"需要走到淡水河流或供水管旁，海水不能装进水壶。");return;}
-        if(progress.water==3){Notify(L"水壶已经装满：3 / 3。");return;}
-        progress.water=3;progress.waterVisited=true;Notify(L"水壶已装满：3 / 3。点击“喝一口”或按 K 饮用，每份补充25点水分。");
+        Crafting::StartSupplyAction(Crafting::FillWater);
     }
     void DrinkWaterskin()
     {
-        if(!ready()){Notify(L"请先完成当前动作并关闭对话，再喝水。");return;}
-        if(!progress.waterskin){Notify(L"还没有水壶，请打开“制作 → 补给”制作。");return;}
-        if(!progress.water){Notify(L"水壶空了。到河流或装有水的水管旁按 K 补水。");return;}
-        if(Guy.Resource[WASSER]>85){Notify(L"水分充足，先把这份水留给接下来的探索吧。");return;}
-        --progress.water;World::AddResource(WASSER,25);Notify(L"喝下一份储存的淡水，水分 +25。");
+        Crafting::StartSupplyAction(Crafting::DrinkWater);
     }
     void UseBandage()
     {
-        if(!ready()){Notify(L"请先完成当前动作，并关闭提示纸张，再制作或使用绷带。");return;}
-        if(progress.bandages && Guy.Resource[GESUNDHEIT]<=85)
+        Crafting::StartSupplyAction(Crafting::ApplyBandage);
+    }
+    std::wstring SupplyProblem(int action)
+    {
+        if(action==Crafting::ApplyBandage)
         {
-            --progress.bandages;World::AddResource(GESUNDHEIT,20);World::AddTime(0,10);Notify(L"包扎了伤口，生命 +20。保持饮食与饮水充足才能继续恢复。");return;
+            if(!progress.bandages)return L"还没有可用绷带，请打开“制作 → 补给”制作。";
+            return Guy.Resource[GESUNDHEIT]>85?L"生命充足，先把绷带留给之后的伤口。":L"";
         }
-        Notify(progress.bandages?L"生命充足，先把绷带留给之后的伤口。":L"还没有可用绷带，请打开“制作 → 补给”制作。");
+        if(!progress.waterskin)return L"还没有水壶，请打开“制作 → 补给”制作。";
+        if(action==Crafting::FillWater)
+        {
+            if(!NearFreshwater())return L"需要走到淡水河流或供水管旁，海水不能装进水壶。";
+            return progress.water>=3?L"水壶已经装满：3 / 3。":L"";
+        }
+        if(action!=Crafting::DrinkWater)return L"没有对应的补给动作。";
+        if(!progress.water)return L"水壶空了。到河流或装有水的水管旁按 K 补水。";
+        return Guy.Resource[WASSER]>85?L"水分充足，先把这份水留给接下来的探索吧。":L"";
+    }
+    void CompleteSupplyAction(int action)
+    {
+        if(!ready())return;
+        const auto problem=SupplyProblem(action);if(!problem.empty()){Notify(problem.c_str());return;}
+        if(action==Crafting::FillWater)
+        {progress.water=3;progress.waterVisited=true;Notify(L"水壶已装满：3 / 3。");}
+        else if(action==Crafting::DrinkWater)
+        {--progress.water;World::AddResource(WASSER,25);Notify(L"喝下一份储存的淡水，水分 +25。");}
+        else if(action==Crafting::ApplyBandage)
+        {--progress.bandages;World::AddResource(GESUNDHEIT,20);Notify(L"包扎完成，生命 +20。");}
     }
     void ToggleJournal(){journal=!journal;}
     Info GetInfo()

@@ -16,18 +16,25 @@ namespace Crafting
         void animate()
         {
             Guy.Aktion=Action::CRAFT;Guy.Aktiv=true;Guy.AkNummer=0;
-            Guy.Zustand=(pendingProduct==ROHANGEL||pendingProduct==Waterskin||pendingProduct==Bandage)?GUYBINDENOBEN:GUYSCHLAGEN;
+            Guy.Zustand=pendingProduct==DrinkWater?GUYTRINKEN:pendingProduct==FillWater?GUYBINDENUNTEN:
+                (pendingProduct==ApplyBandage||pendingProduct==ROHANGEL||pendingProduct==Waterskin||pendingProduct==Bandage)?GUYBINDENOBEN:GUYSCHLAGEN;
             Bmp[BUTTSTOP].Phase=0;
         }
     }
     int DurationSeconds(int product){const auto* r=Find(product);return !r?0:r->category==1?3:r->minutes>0?5:4;}
+    bool IsSupplyAction(int product){return product==FillWater||product==DrinkWater||product==ApplyBandage;}
+    bool UsingSupply(){return Busy()&&IsSupplyAction(pendingProduct);}
+    std::uint32_t DurationMicros(int product)
+    {
+        switch(product){case DrinkWater:return 1200000;case FillWater:return 1600000;case ApplyBandage:return 1900000;default:return DurationSeconds(product)*1000000u;}
+    }
     bool Busy(){return pendingProduct>=0;}
-    JobInfo Job(){return {pendingProduct,Busy()?float(elapsed)/(DurationSeconds(pendingProduct)*1000000):0,Busy()?int((DurationSeconds(pendingProduct)*1000000-elapsed+999999)/1000000):0};}
+    JobInfo Job(){return {pendingProduct,Busy()?float(elapsed)/DurationMicros(pendingProduct):0,Busy()?int((DurationMicros(pendingProduct)-elapsed+999999)/1000000):0};}
     void Cancel(bool notify)
     {
-        const bool active=Busy();pendingProduct=-1;elapsed=0;
-        if(Guy.Aktion==Action::CRAFT){Guy.Aktion=Action::NOTHING;Guy.Aktiv=false;Guy.AkNummer=0;Guy.Zustand=GUYLINKS;Bmp[BUTTSTOP].Phase=-1;}
-        if(active&&notify)Expedition::Notify(L"已停止制作，材料没有扣除。");
+        const bool active=Busy(),supply=UsingSupply();pendingProduct=-1;elapsed=0;
+        if(Guy.Aktion==Action::CRAFT){Guy.Aktion=Action::NOTHING;Guy.Aktiv=false;Guy.AkNummer=0;Guy.Zustand=BootsFahrt?GUYBOOTLINKS:GUYLINKS;Bmp[BUTTSTOP].Phase=-1;}
+        if(active&&notify)Expedition::Notify(supply?L"已停止动作，水和绷带没有消耗。":L"已停止制作，材料没有扣除。");
     }
     void Reset(){Cancel(false);}
     void Save(std::ostream& out){const std::int32_t product=pendingProduct;out.write("CRF1",4);out.write(reinterpret_cast<const char*>(&product),4);out.write(reinterpret_cast<const char*>(&elapsed),4);}
@@ -36,8 +43,8 @@ namespace Crafting
         Reset();std::array<char,4> magic{};std::int32_t product=-1;std::uint32_t time=0;
         if(!in.read(magic.data(),4)||magic!=std::array<char,4>{'C','R','F','1'}||!in.read(reinterpret_cast<char*>(&product),4)||!in.read(reinterpret_cast<char*>(&time),4))return false;
         if(product==-1)return time==0;
-        const auto* r=Find(product);if(!r||r->category==2||time>=DurationSeconds(product)*1000000u||!Problem(product).empty())return false;
-        pendingProduct=product;elapsed=time;animate();return true;
+        const auto* r=Find(product);if((!IsSupplyAction(product)&&(!r||r->category==2))||time>=DurationMicros(product)||!Problem(product).empty())return false;
+        pendingProduct=product;elapsed=time;animate();Bmp[Guy.Zustand].Phase=0;return true;
     }
     const std::vector<Recipe>& Recipes()
     {
@@ -58,6 +65,7 @@ namespace Crafting
     const Recipe* Find(int product){for(const auto& r:Recipes())if(r.product==product)return &r;return nullptr;}
     std::wstring Name(int item)
     {
+        switch(item){case FillWater:return L"装水";case DrinkWater:return L"喝水";case ApplyBandage:return L"包扎";default:break;}
         if(const auto* r=Find(item))return r->name;
         switch(item){case ROHAST:return L"树枝";case ROHSTEIN:return L"石头";case ROHLIANE:return L"藤蔓";case ROHBLATT:return L"棕叶";case ROHSTAMM:return L"原木";default:return L"工具";}
     }
@@ -69,6 +77,7 @@ namespace Crafting
     }
     std::wstring Problem(int product)
     {
+        if(IsSupplyAction(product))return Expedition::SupplyProblem(product);
         const auto* r=Find(product);if(!r)return L"没有对应配方。";
         if(r->category==2)return product==ROHFERNROHR?L"望远镜需要打捞：制作石斧，建造独木舟，上船后在普通沉船处选择“搜索周围”。":L"藏宝图需要探索：乘独木舟寻找另一处海盗沉船，在沉船处选择“搜索周围”。";
         if(product==Bandage&&Expedition::GetInfo().bandages>=3)return L"绷带已满（3/3），需要时按 J 使用。";
@@ -93,15 +102,36 @@ namespace Crafting
         pendingProduct=product;elapsed=0;animate();Bmp[Guy.Zustand].Phase=0;
         const auto message=L"正在制作"+Name(product)+L"，完成后扣除材料。可点击“停止制作”取消。";Expedition::Notify(message.c_str());return true;
     }
+    bool StartSupplyAction(int product)
+    {
+        if(!IsSupplyAction(product))return false;
+        if(Busy())
+        {
+            if(pendingProduct!=product){const auto message=L"正在"+std::wstring(UsingSupply()?L"":L"制作")+Name(pendingProduct)+L"，请稍候或停止当前动作。";Expedition::Notify(message.c_str());}
+            return false;
+        }
+        if(Guy.Aktiv||Guy.Aktion!=Action::NOTHING||Spielzustand!=State::GAME||Nacht||PapierText!=-1)
+        {Expedition::Notify(L"请先完成当前动作并关闭提示，再使用补给。");return false;}
+        if(Stunden>=12){Expedition::Notify(L"天黑了，先休息，明早再使用补给。");return false;}
+        const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return false;}
+        pendingProduct=product;elapsed=0;animate();Bmp[Guy.Zustand].Phase=0;
+        const auto message=L"正在"+Name(product)+L"……";Expedition::Notify(message.c_str());return true;
+    }
     void Update(std::int64_t micros,bool running)
     {
         if(!Busy())return;
         if(Guy.Aktion!=Action::CRAFT||Spielzustand!=State::GAME||Nacht){Cancel(false);return;}
         if(!running||micros<=0)return;
         elapsed+=std::uint32_t(std::min<std::int64_t>(micros,250000));
-        if(elapsed<DurationSeconds(pendingProduct)*1000000u)return;
+        if(UsingSupply())
+        {
+            const int frames=Bmp[Guy.Zustand].Anzahl;
+            if(frames>0)Bmp[Guy.Zustand].Phase=short((elapsed/(pendingProduct==DrinkWater?240000u:220000u))%frames);
+        }
+        if(elapsed<DurationMicros(pendingProduct))return;
         const int product=pendingProduct;Cancel(false);
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return;}
+        if(IsSupplyAction(product)){Expedition::CompleteSupplyAction(product);return;}
         if(product==Waterskin){Expedition::CraftWaterskin();return;}
         if(product==Bandage){Expedition::CraftBandage();return;}
         const auto* r=Find(product);for(const auto& cost:r->costs)Guy.Inventar[cost.item]-=cost.count;

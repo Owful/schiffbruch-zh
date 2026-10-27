@@ -200,7 +200,7 @@ namespace ModernUI
             const auto supplies=Expedition::GetInfo();
             fill(0,656,960,64,BG);line(0,656,960);
             button(18,668,136,38,L"互动  E",[]{Interact();});
-            actionButton(BUTTSTOP,Crafting::Busy()?L"停止制作":L"停止行动",168,668,128,38);
+            actionButton(BUTTSTOP,Crafting::UsingSupply()?L"停止动作":Crafting::Busy()?L"停止制作":L"停止行动",168,668,128,38);
             actionButton(BUTTWEITER,L"继续建造",310,668,128,38);
             const auto waterLabel=!supplies.waterskin?L"制作水壶":std::wstring(Expedition::NearFreshwater()&&supplies.water<3?L"装水 K · ":L"喝水 K · ")+std::to_wstring(supplies.water)+L"/3";
             button(452,668,128,38,waterLabel,[owned=supplies.waterskin]{if(owned)Expedition::UseWaterskin();else showRecipe(Crafting::Waterskin);});
@@ -239,14 +239,6 @@ namespace ModernUI
         txt(24,82,L"已探索 "+std::to_wstring(info.explored)+L"% · 救援进度 "+std::to_wstring(info.signal)+L"%",13,GOLD);
         txt(24,106,L"单击地面移动 · 右键拖动视角 · E 就近互动",13,MUTED);
         txt(812,214,L"缩放 "+std::to_wstring(int(SceneView::Scale()*100+.5f))+L"% · 滚轮调整",13,MUTED);
-        if(Crafting::Busy())
-        {
-            const auto job=Crafting::Job();fill(256,380,448,110,BG);fill(256,380,448,2,GOLD);
-            txt(274,394,L"正在制作 · "+Crafting::Name(job.product),16,GOLD);
-            fill(274,430,410,8,LINE);fill(274,430,int(410*job.fraction),8,GREEN);
-            txt(274,454,L"还需 "+std::to_wstring(job.seconds)+L" 秒 · 完成后扣材料",13,MUTED);
-            button(590,452,98,30,L"停止制作",[]{Crafting::Cancel();});
-        }
         const auto spoken=Nightfall::Line();if(!spoken.empty())
         {
             const auto p=SceneView::ToScreen(Guy.PosScreen.x-Camera.x,Guy.PosScreen.y-Camera.y);
@@ -389,7 +381,8 @@ namespace ModernUI
             fn();return true;
         }
         if(OverlayActive()||x>=960||y<64||y>=656)return true;
-        if(Crafting::Busy()||Nightfall::Pending()){Expedition::Notify(Crafting::Busy()?L"正在制作，可等待完成或点击“停止制作”。":L"正在收工返营，请稍候。");return true;}
+        if(Crafting::Busy()||Nightfall::Pending())
+        {const auto message=Crafting::Busy()?L"正在"+std::wstring(Crafting::UsingSupply()?L"":L"制作")+Crafting::Name(Crafting::Job().product)+L"，可等待完成或点击下方停止按钮。":L"正在收工返营，请稍候。";Expedition::Notify(message.c_str());return true;}
         if(Spielzustand==State::GAME){const auto p=SceneView::ToScene(x,y);return Interaction::Click(p.x,p.y);}return false;
     }
     bool HandleWheel(float delta,int x,int y)
