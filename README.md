@@ -1,4 +1,6 @@
 # 漂流之境 · 交互修正版
+<img width="3287" height="1689" alt="image" src="https://github.com/user-attachments/assets/d66ee84f-58af-45c1-9fa5-7f49b89b5fa3" />
+
 
 **一座荒岛，一天只有有限的时间。** 在《Schiffbruch》的岛屿上寻找淡水与食物，制作工具，搭起庇护所，探索沉船，设法发出求救信号。
 
