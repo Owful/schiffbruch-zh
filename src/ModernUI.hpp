@@ -8,6 +8,7 @@ namespace ModernUI
     void DrawCredits();
     void DrawDialog();
     void DrawOverlay();
+    void DrawNightJournal();
     bool HandleClick(int x,int y);
     bool HandleKey(int key);
     bool HandleWheel(float delta,int x,int y);

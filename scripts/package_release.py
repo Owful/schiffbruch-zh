@@ -8,7 +8,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.7"
+VERSION = "v0.1.0-preview.8"
 NAME = f"Schiffbruch-ZH-{VERSION}"
 DOCUMENTS = (
     "README.md",

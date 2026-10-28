@@ -4,6 +4,8 @@
 #include "extern.hpp"
 #include "Action.hpp"
 #include "State.hpp"
+#include "SceneView.hpp"
+#include "PaceRules.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -20,6 +22,7 @@ namespace World
         Expedition::OnTime(hours*60+minutes,start);
     }
 }
+namespace Renderer { void LimitScroll() {} }
 namespace
 {
     int failures=0;
@@ -71,12 +74,41 @@ int main()
     const auto saved=current();std::stringstream data(std::ios::in|std::ios::out|std::ios::binary);Expedition::Save(data);
     Expedition::Reset();data.seekg(0);Expedition::Load(data);check(current().water==saved.water&&current().waterskin,"live save and load preserve crafted gear");
     setup();const auto caches=current().caches;
-    check(caches[0].x!=255&&std::abs(int(caches[0].x)-10)+std::abs(int(caches[0].y)-30)<=2,"first cache is near the landing");
+    int count=0;for(const auto& c:caches)if(c.x!=255){++count;check(std::abs(int(c.x)-10)+std::abs(int(c.y)-30)>=7,"cache is away from landing");}
+    check(count==3&&caches[3].x==255,"new island has at most three spaced caches");
+    {
+        NativeSurface frame(1280,720);lpDDSBack=&frame;rcSpielflaeche={0,64,960,656};
+        auto& tile=Scape[caches[0].x][caches[0].y];tile.xScreen=500;tile.yScreen=330;
+        MousePosition={0,0};
+        for(unsigned zoom:{0u,4u,8u}) for(int offset:{0,40})
+        {
+            PaceRules::zoomStep=zoom;Camera={short(offset),short(offset)};
+            DDBLTFX clear{};frame.Blt(nullptr,nullptr,nullptr,DDBLT_COLORFILL,&clear);
+            Expedition::DrawCaches(false);Expedition::DrawCaches(true);SceneView::Apply();
+            const auto pixel=SceneView::ToScreen(tile.xScreen+31-Camera.x,tile.yScreen+24-Camera.y);
+            DDSURFACEDESC2 locked{};frame.Lock(nullptr,&locked,0,nullptr);
+            const auto* pixels=static_cast<const unsigned*>(locked.lpSurface);
+            check((pixels[pixel.y*1280+pixel.x]&0xffffff)!=0,"cache remains on its world tile during zoom and camera movement");
+            frame.Unlock(nullptr);
+        }
+        Camera={0,0};PaceRules::zoomStep=0;
+        for(bool front:{false,true})
+        {
+            Guy.PosScreen.y=short(tile.yScreen+(front?0:60));DDBLTFX clear{};frame.Blt(nullptr,nullptr,nullptr,DDBLT_COLORFILL,&clear);
+            Expedition::DrawCaches(!front);
+            DDSURFACEDESC2 locked{};frame.Lock(nullptr,&locked,0,nullptr);const auto* pixels=static_cast<const unsigned*>(locked.lpSurface);
+            check((pixels[(tile.yScreen+24)*1280+tile.xScreen+31]&0xffffff)==0,"cache is omitted from the wrong depth layer");frame.Unlock(nullptr);
+            Expedition::DrawCaches(front);frame.Lock(nullptr,&locked,0,nullptr);pixels=static_cast<const unsigned*>(locked.lpSurface);
+            check((pixels[(tile.yScreen+24)*1280+tile.xScreen+31]&0xffffff)!=0,"cache is drawn on the correct side of the player");frame.Unlock(nullptr);
+        }
+        lpDDSBack=nullptr;PaceRules::reset();
+    }
     Guy.Pos={caches[0].x,caches[0].y};Expedition::OnSearch();
-    check(current().claimed==1&&Guy.Inventar[ROHAST]==3&&Guy.Inventar[ROHBLATT]==2,"search claims cache rewards");
-    Expedition::OnSearch();check(Guy.Inventar[ROHAST]==3,"claimed cache cannot be farmed repeatedly");
+    check(current().claimed==1&&Guy.Inventar[ROHSTAMM]==1&&Guy.Inventar[ROHAST]==2&&Guy.Inventar[ROHLIANE]==2,"search claims varied cache rewards");
+    Expedition::OnSearch();check(Guy.Inventar[ROHAST]==2,"claimed cache cannot be farmed repeatedly");
     setup();Guy.Pos={caches[0].x,caches[0].y};Guy.Inventar[ROHAST]=10;Guy.Inventar[ROHBLATT]=10;Expedition::OnSearch();
     check(current().claimed==0,"completely full inventory leaves cache unclaimed");
+    for(unsigned i:{1u,2u}) {setup();Guy.Pos={caches[i].x,caches[i].y};Expedition::OnSearch();check((current().claimed&(1u<<i))!=0,"each cache kind can be claimed");check(i==1?Guy.Inventar[ROHSTEIN]==3:current().bandages==1,"cache kinds contain different useful rewards");}
     setup();Scape[12][12].Objekt=SOS;Scape[13][12].Objekt=FEUER;Guy.Inventar[ROHFERNROHR]=1;
     Expedition::OnTime(120,0);check(current().signal==120000,"complete signal setup accumulates time");
     Scape[13][12].Objekt=-1;Expedition::OnTime(60,0);check(current().signal==120000,"extinguished fire pauses rescue progress");

@@ -24,6 +24,7 @@
 #include "Nightfall.hpp"
 #include "Construction.hpp"
 #include "AudioRules.hpp"
+#include "DayJournal.hpp"
 
 #include <ctime>
 #include <algorithm>
@@ -51,11 +52,22 @@ bool Application::checkRevision()
             require(Game::LoadGame(),"legacy save did not load");legacyLoaded=true;
             const float water=Guy.Resource[WASSER];const int day=Tag;const auto pos=Guy.Pos;Game::SaveGame();require(Game::LoadGame()&&Guy.Resource[WASSER]==water&&Tag==day&&Guy.Pos.x==pos.x&&Guy.Pos.y==pos.y,"legacy progress changed during roundtrip");
         }
+        {
+            Spielzustand=State::GAME;BootsFahrt=false;Guy.Aktiv=true;Guy.Zustand=GUYLINKS;
+            Scape[Guy.Pos.x][Guy.Pos.y].LaufZeit=1;Steps=1000;Step=0;
+            for(int i=0;i<81;++i){++Bild;Math::CalcGuyKoor();}
+            require(Step==54,"land walking cadence did not slow by one third");
+            BootsFahrt=true;Step=0;Guy.Zustand=GUYBOOTLINKS;
+            for(int i=0;i<81;++i){++Bild;Math::CalcGuyKoor();}
+            require(Step==81,"land walking change affected boat movement");
+        }
         report<<"{\n  \"legacy_loaded\":"<<(legacyLoaded?"true":"false")<<",\n  \"maps\": [\n";
         const int seeds[]={1,7,42,2026};
         for(int n=0;n<4;++n)
         {
             std::srand(seeds[n]);ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();PaceRules::reset();Stunden=Minuten=0;
+            for(int y=0;y<MAXYKACH;++y)for(int x=0;x<MAXXKACH;++x)
+                require(Scape[x][y].Entdeckt==(std::abs(x-Guy.Pos.x)<=1&&std::abs(y-Guy.Pos.y)<=1),"new game visibility is not centered 3x3");
             Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
             World::AddTime(1,0);World::AddTime(0,1);require(Stunden==0&&Minuten==0,"legacy actions still jump the clock");
             for(int i=0;i<240;++i)GameClock::Advance(100000,true);
@@ -77,7 +89,21 @@ bool Application::checkRevision()
                 for(unsigned zoom:{0u,4u,8u})
                 {
                     Interaction::StopSafely();PapierText=-1;Frage=-1;PaceRules::zoomStep=zoom;Camera={short(worldX-480),short(worldY-360)};Renderer::LimitScroll();World::Generate();Renderer::Zeige();
-                    const auto screen=SceneView::ToScreen(worldX-Camera.x,worldY-Camera.y);require(screen.x>0&&screen.x<960&&screen.y>64&&screen.y<656,"zoom target outside viewport");
+                    const auto& bitmap=Bmp[tile.Objekt];const auto* pixels=bitmap.Surface->pixels();
+                    SceneView::Point screen{-1,-1};
+                    const int frame=std::max(0,int(tile.Phase));
+                    for(int dy=1;dy<bitmap.Hoehe-1&&screen.x<0;++dy)for(int dx=1;dx<bitmap.Breite-1;++dx)
+                    {
+                        const auto candidate=SceneView::ToScreen(tile.xScreen+tile.ObPos.x+dx-Camera.x,tile.yScreen+tile.ObPos.y+dy-Camera.y);
+                        if(candidate.x<=0||candidate.x>=960||candidate.y<=64||candidate.y>=656)continue;
+                        const auto scene=SceneView::ToScene(candidate.x,candidate.y);
+                        const int sx=bitmap.rcSrc.left+scene.x+Camera.x-tile.xScreen-tile.ObPos.x;
+                        const int sy=bitmap.rcSrc.top+(tile.Reverse?std::max(0,bitmap.Anzahl-1-frame):frame)*bitmap.Hoehe+scene.y+Camera.y-tile.yScreen-tile.ObPos.y;
+                        if(sx<0||sy<0||sx>=bitmap.Surface->width()||sy>=bitmap.Surface->height())continue;
+                        const auto* p=pixels+4*(sy*bitmap.Surface->width()+sx);
+                        if(p[0]!=255||p[1]!=0||p[2]!=255){screen=candidate;break;}
+                    }
+                    require(screen.x>=0,"zoom target has no visible clickable pixel");
                     ModernUI::HandleClick(screen.x,screen.y);
                     require((RouteZiel.x==target.x&&RouteZiel.y==target.y)||Guy.Aktion==(water?Action::DRINK:Action::EAT),"zoomed click selected the wrong food or water target");++clicks;
                 }
@@ -225,6 +251,25 @@ bool Application::checkRevision()
         ModernUI::DrawStart();ModernUI::HandleClick(430,248);require(Soundzustand==1,"visible sound toggle did not reenable audio");
         ModernUI::DrawStart();ModernUI::HandleClick(600,548);ModernUI::DrawStart();ModernUI::HandleClick(150,350);
         require(Spielzustand==State::GAME&&!ModernUI::OverlayActive(),"sound settings return button did not restore the main menu controls");
+        // Exercise the actual overnight transition, save, resume, music and skip.
+        ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
+        BootsFahrt=false;Guy.Resource[GESUNDHEIT]=100;auto& nightTile=Scape[Guy.Pos.x][Guy.Pos.y];
+        Tag=5;Stunden=11;nightTile.Art=2;nightTile.Objekt=-1;Guy.Inventar[ROHSTEIN]=9;Guy.Aktion=Action::SEARCH;Guy.AkNummer=10;Action::handler(Guy.Aktion);
+        require(Guy.Inventar[ROHSTEIN]==10&&DayJournal::loot[DayJournal::Stone]==1,"search journal did not record the actual quantity received at the inventory limit");
+        PapierText=-1;Guy.Aktiv=false;nightTile.Objekt=ZELT;nightTile.Phase=0;Stunden=12;
+        DayJournal::Mark(Tag,DayJournal::Food);DayJournal::Mark(Tag,DayJournal::Craft);DayJournal::RecordLoot(Tag,DayJournal::Branch,3);
+        Guy.Aktion=Action::DAY_END;Guy.AkNummer=6;Guy.Aktiv=false;Action::handler(Guy.Aktion);
+        require(Nacht&&DayJournal::Active()&&PapierText==-1&&Guy.Resource[GESUNDHEIT]==95.f,"overnight journal did not preserve the shelter outcome");
+        Renderer::Zeige();const auto* nightPixels=lpDDSBack->pixels();require(nightPixels[4*(120*1280+250)]!=0,"night journal was not rendered");
+        {std::ofstream preview("night-preview.ppm",std::ios::binary);preview<<"P6\n1280 720\n255\n";for(int i=0;i<1280*720;++i){const char rgb[]={char(nightPixels[4*i+2]),char(nightPixels[4*i+1]),char(nightPixels[4*i])};preview.write(rgb,3);}}
+        for(int i=0;i<180;++i)Sound::Update(16667,true,false);
+        require(Sound::CurrentVolume(Sound::LOGO)>0&&Sound::IsPlaying(Sound::LOGO),"night music did not fade in");
+        Game::SaveGame();Nacht=false;DayJournal::Reset();require(Game::LoadGame()&&Nacht&&DayJournal::Active()&&(DayJournal::events&DayJournal::Food)&&(DayJournal::events&DayJournal::Craft)&&DayJournal::loot[DayJournal::Branch]==3,"night journal or daily facts did not survive loading");
+        require(Guy.Resource[GESUNDHEIT]==95.f,"loading a night applied the sleep penalty twice");
+        for(int i=0;i<16;++i)require(!DayJournal::Advance(250000,true),"night ended before the skip became available");
+        ModernUI::HandleKey(sf::Keyboard::Return);require(DayJournal::Advance(1,true),"night skip did not advance after reading time");
+        Guy.Aktiv=false;Action::handler(Guy.Aktion);
+        require(!Nacht&&Tag==6&&DayJournal::events==0&&Guy.Resource[GESUNDHEIT]==95.f,"morning did not clear the journal or repeated sleep effects");
         Sound::SetEnabled(false);
         report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"silent_ui_clicks\":true,\n  \"nonblocking_dusk_and_critical_pause\":true,\n  \"passed\":true\n}\n";return true;
     }
@@ -345,10 +390,11 @@ void Application::run()
             Renderer::LimitScroll();
             Math::Animationen();
             Crafting::Update(elapsed,running);
+            if(DayJournal::Advance(elapsed,running))Guy.Aktiv=false;
             Interaction::Update();
             ModernUI::CheckSafety();
             if(!ModernUI::OverlayActive())
-            if (!Guy.Aktiv) Action::handler(Guy.Aktion);
+            if (!Guy.Aktiv&&!DayJournal::Active()) Action::handler(Guy.Aktion);
             Nightfall::Update(elapsed,m_window.hasFocus()&&!ModernUI::OverlayActive()&&PapierText==-1);
             }
             Renderer::Zeige();

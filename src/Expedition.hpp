@@ -22,6 +22,7 @@ namespace Expedition
     void ToggleEffects();
     void ToggleHud();
     void DrawAtmosphere();
+    void DrawCaches(bool inFrontOfPlayer);
     void DrawHud();
     void Notify(const wchar_t* text);
     void CollectTimber();

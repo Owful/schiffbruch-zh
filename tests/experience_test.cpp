@@ -55,8 +55,12 @@ int main()
     setup();NativeSurface sprite(20,30);DDBLTFX color{};color.dwFillColor=0xff00ff;sprite.Blt(nullptr,nullptr,nullptr,DDBLT_COLORFILL,&color);
     HDC dc=nullptr;sprite.GetDC(&dc);SetPixelV(dc,18,10,RGB(50,150,60));sprite.ReleaseDC(dc);
     Bmp[BUSCH].Surface=&sprite;Bmp[BUSCH].Anzahl=1;Scape[12][10].Objekt=BUSCH;Scape[12][10].xScreen=100;Scape[12][10].yScreen=100;
-    check(Interaction::Click(121,110)&&RouteZiel.x==12,"near-edge click tolerates small misses around visible berries");
+    clickedGround={12,10};check(!Interaction::Click(121,110)&&!Guy.Aktiv,"ground near fruit does not start eating, even on the same tile");
+    check(Interaction::Click(118,110)&&RouteZiel.x==12,"clicking an opaque berry pixel selects the fruit");
     Interaction::Cancel();Guy.Aktiv=false;check(!Interaction::Click(100,100),"empty transparent sprite corners do not capture ground clicks");Bmp[BUSCH].Surface=nullptr;
+    setup();Bmp[FLUSS1].Surface=&sprite;Bmp[FLUSS1].Anzahl=1;Scape[12][10].Objekt=FLUSS1;Scape[12][10].xScreen=100;Scape[12][10].yScreen=100;clickedGround={12,10};
+    check(!Interaction::Click(121,110)&&!Guy.Aktiv,"ground near a stream does not start drinking");
+    check(Interaction::Click(118,110)&&RouteZiel.x==12,"clicking visible water selects the stream");Bmp[FLUSS1].Surface=nullptr;
     setup();Scape[11][10].Objekt=BAUM1;
     check(!Interaction::Request(Interaction::Intent::Any)&&notice.empty()&&!Guy.Aktiv,"general interaction never treats a nearby tree as a chopping request");
     Scape[11][10].xScreen=100;Scape[11][10].yScreen=100;clickedGround={11,10};

@@ -7,6 +7,8 @@
 #include "State.hpp"
 #include "WeatherEffects.hpp"
 #include "Crafting.hpp"
+#include "SceneView.hpp"
+#include "DayJournal.hpp"
 
 #include <algorithm>
 #include <array>
@@ -70,19 +72,12 @@ namespace Expedition
             }
             std::sort(candidates.begin(),candidates.end(),[](const auto& a,const auto& b){return a.score<b.score;});
             unsigned n=0;
-            // The first cache is near the landing so the new content is discoverable early.
-            if (!candidates.empty())
-            {
-                auto first=std::min_element(candidates.begin(),candidates.end(),[&](const auto& a,const auto& b){
-                    return std::abs(a.x-landingX)+std::abs(a.y-int(MAXYKACH/2)) < std::abs(b.x-landingX)+std::abs(b.y-int(MAXYKACH/2));
-                });
-                progress.caches[n++]={static_cast<std::uint8_t>(first->x),static_cast<std::uint8_t>(first->y),0};
-            }
             for (const auto& c:candidates)
             {
-                if(n==progress.caches.size()) break;
+                if(n==3) break;
+                if(std::abs(c.x-landingX)+std::abs(c.y-int(MAXYKACH/2))<7)continue;
                 bool spaced=true;
-                for(unsigned i=0;i<n;++i) if(std::abs(c.x-progress.caches[i].x)+std::abs(c.y-progress.caches[i].y)<7)spaced=false;
+                for(unsigned i=0;i<n;++i) if(std::abs(c.x-progress.caches[i].x)+std::abs(c.y-progress.caches[i].y)<10)spaced=false;
                 if(spaced){progress.caches[n]={static_cast<std::uint8_t>(c.x),static_cast<std::uint8_t>(c.y),static_cast<std::uint8_t>(n%3)};++n;}
             }
         }
@@ -134,7 +129,7 @@ namespace Expedition
     void Reset()
     {
         progress={};populateCaches();journal=false;
-        Notify(L"海岸上出现了漂流补给。走近金色木箱，使用原来的“搜索”操作拾取。F1 查看生存手记。");
+        Notify(L"岛上偶尔能发现漂流补给。走到木箱所在位置并搜索，可以取得里面的物资。");
     }
     void Save(std::ostream& out) { ExpeditionRules::write(out,progress); }
     void Load(std::istream& in)
@@ -170,12 +165,18 @@ namespace Expedition
         {
             const auto& cache=progress.caches[i];
             if((progress.claimed&(1u<<i)) || cache.x!=Guy.Pos.x || cache.y!=Guy.Pos.y)continue;
-            int first=0,second=0;wchar_t message[180]{};
-            if(cache.kind==0){first=give(ROHAST,3);second=give(ROHBLATT,2);std::swprintf(message,180,L"找到漂流补给：树枝 +%d，棕叶 +%d。可用于搭建帐篷和制作水壶。",first,second);}
-            else if(cache.kind==1){first=give(ROHLIANE,3);second=give(ROHSTEIN,2);std::swprintf(message,180,L"找到漂流补给：藤蔓 +%d，石头 +%d。试试组合材料制作工具。",first,second);}
-            else{if(progress.bandages<3){++progress.bandages;first=1;}second=give(ROHBLATT,2);std::swprintf(message,180,L"找到医药补给：绷带 +%d，棕叶 +%d。按 J 在受伤时使用绷带。",first,second);}
-            if(first+second==0){Notify(L"背包已满，补给箱仍留在这里。腾出空间后再搜索。");return;}
-            progress.claimed|=static_cast<std::uint8_t>(1u<<i);Notify(message);return;
+            struct Reward {int item,count;const wchar_t* name;};
+            const std::array<Reward,3> supplies = cache.kind==0 ? std::array<Reward,3>{{{ROHSTAMM,1,L"原木"},{ROHAST,2,L"树枝"},{ROHLIANE,2,L"藤蔓"}}} :
+                cache.kind==1 ? std::array<Reward,3>{{{ROHSTEIN,3,L"石头"},{ROHAST,2,L"树枝"},{ROHBLATT,2,L"棕叶"}}} :
+                std::array<Reward,3>{{{ROHLIANE,2,L"藤蔓"},{ROHBLATT,3,L"棕叶"},{ROHSTEIN,1,L"石头"}}};
+            for(const auto& r:supplies)if(Guy.Inventar[r.item]+r.count>10)
+            {std::wstring message=L"携带空间不足，补给箱仍留在这里。请为"+std::wstring(r.name)+L"腾出至少 "+std::to_wstring(r.count)+L" 格空间后再搜索。";Notify(message.c_str());return;}
+            if(cache.kind==2&&progress.bandages>=3){Notify(L"绷带已满，补给箱仍留在这里。使用绷带后再搜索。");return;}
+            std::wstring message=L"找到漂流补给：";
+            for(const auto& r:supplies){give(r.item,r.count);message+=std::wstring(r.name)+L" +"+std::to_wstring(r.count)+L"，";}
+            if(cache.kind==2){++progress.bandages;DayJournal::RecordLoot(Tag,DayJournal::Bandage,1);message+=L"绷带 +1，";}
+            message.replace(message.size()-1,1,L"。");
+            progress.claimed|=static_cast<std::uint8_t>(1u<<i);DayJournal::Mark(Tag,DayJournal::Cache);Notify(message.c_str());return;
         }
     }
     bool CraftWaterskin()
@@ -240,9 +241,9 @@ namespace Expedition
         if(action==Crafting::FillWater)
         {progress.water=3;progress.waterVisited=true;Notify(L"水壶已装满：3 / 3。");}
         else if(action==Crafting::DrinkWater)
-        {--progress.water;World::AddResource(WASSER,25);Notify(L"喝下一份储存的淡水，水分 +25。");}
+        {--progress.water;World::AddResource(WASSER,25);DayJournal::Mark(Tag,DayJournal::Water);Notify(L"喝下一份储存的淡水，水分 +25。");}
         else if(action==Crafting::ApplyBandage)
-        {--progress.bandages;World::AddResource(GESUNDHEIT,20);Notify(L"包扎完成，生命 +20。");}
+        {--progress.bandages;World::AddResource(GESUNDHEIT,20);DayJournal::Mark(Tag,DayJournal::Care);Notify(L"包扎完成，生命 +20。");}
     }
     void ToggleJournal(){journal=!journal;}
     Info GetInfo()
@@ -287,23 +288,39 @@ namespace Expedition
         }
         RestoreDC(dc,fireSaved);lpDDSBack->ReleaseDC(dc);
     }
-    void DrawHud()
+    void DrawCaches(bool inFrontOfPlayer)
     {
-        if(Nacht||!lpDDSBack)return;
+        if(Nacht||PapierText!=-1||!lpDDSBack)return;
         HDC dc=nullptr;if(FAILED(lpDDSBack->GetDC(&dc)))return;
-        const int saved=SaveDC(dc);IntersectClipRect(dc,0,0,rcSpielflaeche.right,rcSpielflaeche.bottom);
-        if(PapierText==-1)
+        const int saved=SaveDC(dc);IntersectClipRect(dc,rcSpielflaeche.left,rcSpielflaeche.top,rcSpielflaeche.right,rcSpielflaeche.bottom);
         {
-            // Draw only revealed caches. These are overlays, so legacy terrain and saves stay intact.
+            // Draw in scene coordinates before zoom, so caches stay anchored to their tiles.
             for(unsigned i=0;i<progress.caches.size();++i)
             {
                 const auto& cache=progress.caches[i];if((progress.claimed&(1u<<i))||!positionValid(cache.x,cache.y))continue;
                 const auto& tile=Scape[cache.x][cache.y];if(!tile.Entdeckt)continue;
                 const int x=tile.xScreen+27-Camera.x,y=tile.yScreen+29-Camera.y;
+                if((tile.yScreen+30>Guy.PosScreen.y)!=inFrontOfPlayer)continue;
                 if(x<8||y<20||x>rcSpielflaeche.right-10||y>rcSpielflaeche.bottom-10)continue;
                 fill(dc,x-7,y-9,14,10,RGB(156,114,65));stroke(dc,x-7,y-10,x+7,y-10,Gold);stroke(dc,x-2,y-10,x-2,y+1,RGB(226,201,137),2);
-                if(std::abs(MousePosition.x-x)<30&&std::abs(MousePosition.y-y)<30){panel(dc,x-76,y-35,154,23);text(dc,x-65,y-33,L"漂流补给 · 搜索拾取",Gold,1);}
             }
+        }
+        RestoreDC(dc,saved);lpDDSBack->ReleaseDC(dc);
+    }
+    void DrawHud()
+    {
+        if(Nacht||!lpDDSBack)return;
+        HDC dc=nullptr;if(FAILED(lpDDSBack->GetDC(&dc)))return;
+        const int saved=SaveDC(dc);IntersectClipRect(dc,0,0,rcSpielflaeche.right,rcSpielflaeche.bottom);
+        if(PapierText==-1)for(unsigned i=0;i<progress.caches.size();++i)
+        {
+            const auto& cache=progress.caches[i];if((progress.claimed&(1u<<i))||!positionValid(cache.x,cache.y))continue;
+            const auto& tile=Scape[cache.x][cache.y];if(!tile.Entdeckt)continue;
+            const int x=tile.xScreen+27-Camera.x,y=tile.yScreen+29-Camera.y;
+            if(std::abs(MousePosition.x-x)>=30||std::abs(MousePosition.y-y)>=30)continue;
+            const auto screen=SceneView::ToScreen(x,y);
+            if(screen.x<0||screen.x>=960||screen.y<64||screen.y>=656)continue;
+            panel(dc,screen.x-76,screen.y-35,154,23);text(dc,screen.x-65,screen.y-33,L"漂流补给 · 搜索拾取",Gold,1);
         }
         if(GetTickCount64()<noticeUntil&&!notice.empty())
         {

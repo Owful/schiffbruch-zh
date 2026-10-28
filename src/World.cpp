@@ -1,5 +1,6 @@
 #include "Localization.hpp"
 #include "World.hpp"
+#include "DayJournal.hpp"
 
 #include "Action.hpp"
 #include "Direct.hpp"
@@ -1592,16 +1593,17 @@ namespace World
         TwoClicks = -1;
     }
 
-    void Entdecken()
+    void Entdecken(bool record)
     {
         bool changed=false;
-        const int radius=Guy.Inventar[ROHFERNROHR]>0?5:3;
+        const bool telescope=Guy.Inventar[ROHFERNROHR]>0;
+        const int radius=telescope?5:1;
         for(int dx=-radius;dx<=radius;++dx)for(int dy=-radius;dy<=radius;++dy)
         {
             const int x=Guy.Pos.x+dx,y=Guy.Pos.y+dy;
-            if(x<0||y<0||x>=int(MAXXKACH)||y>=int(MAXYKACH)||dx*dx+dy*dy>radius*radius)continue;
+            if(x<0||y<0||x>=int(MAXXKACH)||y>=int(MAXYKACH)||(telescope&&dx*dx+dy*dy>radius*radius))continue;
             if(!Scape[x][y].Entdeckt){Scape[x][y].Entdeckt=true;changed=true;}
         }
-        if(changed)Generate();
+        if(changed){if(record&&Spielzustand==State::GAME)DayJournal::Mark(Tag,DayJournal::Explore);Generate();}
     }
 } // namespace World

@@ -20,6 +20,7 @@
 #include "Nightfall.hpp"
 #include "Construction.hpp"
 #include "DuskNotice.hpp"
+#include "DayJournal.hpp"
 #include "State.hpp"
 #include <SFML/Window.hpp>
 #include <array>
@@ -288,7 +289,7 @@ namespace ModernUI
         Crafting::SyncUnlocks();
         if(Spielzustand==State::INTRO){Direct::QueueKeyPress(sf::Keyboard::Return);Direct::CheckKey();}
         HauptMenue=Menu::ACTION;Layout();
-        if(fresh){for(auto& column:Scape)for(auto& tile:column)tile.Entdeckt=false;World::Entdecken();World::Generate();}
+        if(fresh){for(auto& column:Scape)for(auto& tile:column)tile.Entdeckt=false;World::Entdecken(false);World::Generate();}
         Camera.x=Guy.PosScreen.x-480;Camera.y=Guy.PosScreen.y-360;
         Renderer::LimitScroll();
         Expedition::Notify(L"单击地面即可移动。按 E 互动；打开“制作”准备工具。天黑前寻找庇护所。");
@@ -318,6 +319,39 @@ namespace ModernUI
         const bool question=Frage==0;
         if(question){fill(326,535,284,38,CARD);fill(638,535,284,38,CARD);txt(350,543,L"确认",16,GOLD);txt(662,543,L"取消");Bmp[JA].rcDes={326,535,610,573};Bmp[NEIN].rcDes={638,535,922,573};}
         else{fill(326,535,596,38,CARD);txt(534,543,L"点击继续  /  回车",16,GOLD);}
+        end();
+    }
+    void DrawNightJournal()
+    {
+        if(!DayJournal::Active())return;
+        begin(lpDDSBack);
+        for(int y=0;y<720;++y)fill(0,y,1280,1,RGB(10+y/145,22+y/100,35+y/80));
+        for(int i=0;i<45;++i){const int x=40+(i*197)%1200,y=25+(i*79)%165;fill(x,y,2,2,RGB(84+i%4*18,104+i%4*16,115+i%4*14));}
+        fill(104,67,1072,588,RGB(19,34,42));fill(104,67,1072,2,GOLD);
+        txt(145,91,L"第 "+std::to_wstring(Tag)+L" 天",13,GOLD);txt(145,117,L"夜晚的手记",25,FG);
+        txt(145,154,L"让今天慢慢落下，也为明天留一点光。",13,MUTED);
+        line(145,185,990,LINE);
+        txt(145,207,L"今天的足迹",16,GOLD);
+        const auto summary=DayJournal::Summary();int y=246;
+        for(const auto& item:summary){txt(145,y,L"·  "+item,16,FG);y+=28;}
+        fill(755,203,380,230,RGB(25,45,51));fill(755,203,2,230,RGB(135,126,91));
+        txt(781,222,L"今日收获",16,GOLD);txt(781,250,L"实际入包的数量，含后来用掉的物资",13,MUTED);
+        const auto loot=DayJournal::LootSummary();
+        if(loot.empty())txt(781,292,L"今天没有记录到物资收获。",13,MUTED);
+        else for(unsigned i=0;i<loot.size();++i)
+        {
+            const int x=781+int(i%2)*174, row=290+int(i/2)*26;
+            txt(x,row,loot[i].name,13,FG);txt(x+107,row,L"+"+std::to_wstring(loot[i].count),13,GOLD);
+        }
+        fill(145,467,990,96,RGB(31,48,51));fill(145,467,3,96,GOLD);
+        txt(170,483,L"给今天的你",13,GOLD);
+        auto old=SelectObject(active,font(16));SetBkMode(active,TRANSPARENT);SetTextColor(active,RGB(237,225,196));
+        const auto encouragement=DayJournal::Encouragement(Tag);RECT r{170,511,1105,555};DrawTextW(active,encouragement.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX);SelectObject(active,old);
+        const auto& tile=Scape[Guy.Pos.x][Guy.Pos.y];
+        const bool tent=tile.Objekt==ZELT&&tile.Phase<Bmp[ZELT].Anzahl;
+        const bool house=tile.Objekt==HAUS3&&tile.Phase<Bmp[HAUS3].Anzahl;
+        txt(145,588,house?L"树屋休息 · 恢复生命":tent?L"帐篷休息 · 生命 −5":L"野外休息 · 生命 −20",13,MUTED);
+        txt(793,588,DayJournal::CanSkip()?L"回车或点击此处，迎接清晨 →":L"让海浪陪你休息一会儿……",13,GOLD);
         end();
     }
     void DrawOverlay()
@@ -380,6 +414,7 @@ namespace ModernUI
     }
     bool HandleClick(int x,int y)
     {
+        if(DayJournal::Active()&&!OverlayActive()){if(inside(x,y,RECT{775,575,1140,620}))DayJournal::Skip();return true;}
         if(Spielzustand!=State::LOGO&&PapierText!=-1&&!paused&&!journal&&!safety)
         {
             if(Frage==0){if(inside(x,y,Bmp[JA].rcDes))closePaper(true);else if(inside(x,y,Bmp[NEIN].rcDes))closePaper(false);}
@@ -410,6 +445,7 @@ namespace ModernUI
     bool HandleKey(int key)
     {
         if(safety)return true;
+        if(DayJournal::Active()&&key==sf::Keyboard::Return&&!OverlayActive()){DayJournal::Skip();return true;}
         if(key==sf::Keyboard::Escape){if(confirmNew){confirmNew=false;return true;}if(PapierText!=-1){closePaper(false);return true;}if(journal)journal=false;else{paused=!paused;settings=false;}return true;}
         if(Spielzustand!=State::LOGO&&key==sf::Keyboard::Return&&PapierText!=-1){closePaper(true);return true;}
         if(Spielzustand==State::LOGO&&key==sf::Keyboard::Return){StartGame(!std::filesystem::exists("save.dat"));return true;}

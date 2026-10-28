@@ -1,5 +1,6 @@
 #include "Action.hpp"
 #include "Expedition.hpp"
+#include "DayJournal.hpp"
 
 #include "types.hpp"
 
@@ -14,6 +15,14 @@ namespace Action
 {
     void handler(short event)
     {
+        constexpr int lootItems[]={ROHAST,ROHSTAMM,ROHSTEIN,ROHBLATT,ROHLIANE,ROHFERNROHR,ROHKARTE,ROHSCHAUFEL,ROHSTREICHHOLZ};
+        constexpr DayJournal::Loot lootKinds[]={DayJournal::Branch,DayJournal::Log,DayJournal::Stone,DayJournal::Leaf,DayJournal::Vine,DayJournal::Telescope,DayJournal::Map,DayJournal::Shovel,DayJournal::Firestarter};
+        std::array<int,std::size(lootItems)> before{};
+        const bool collecting=event==SEARCH||event==LOG||event==TREASURE;
+        if(collecting)for(unsigned i=0;i<before.size();++i)before[i]=Guy.Inventar[lootItems[i]];
+        const bool building=event==FIELD||event==TENT||event==BOAT||event==PIPE||event==SOS_SIGN||event==HOUSE1||event==HOUSE2||event==HOUSE3||event==FIREPLACE;
+        const bool validPos=Guy.Pos.x>=0&&Guy.Pos.y>=0&&Guy.Pos.x<MAXXKACH&&Guy.Pos.y<MAXYKACH;
+        const auto oldPos=Guy.Pos;const int oldBuild=building&&validPos?Scape[oldPos.x][oldPos.y].AkNummer:0;
         if (event != NOTHING)
         {
             Routing::MarkRoute(false);
@@ -115,6 +124,8 @@ namespace Action
             death();
             break;
         }
+        if(building&&validPos&&Scape[oldPos.x][oldPos.y].AkNummer>oldBuild)DayJournal::Mark(Tag,DayJournal::Build);
+        if(collecting)for(unsigned i=0;i<before.size();++i)DayJournal::RecordLoot(Tag,lootKinds[i],Guy.Inventar[lootItems[i]]-before[i]);
     }
 
     void intro()
@@ -623,6 +634,7 @@ namespace Action
             break;
         case 12:
             Expedition::OnSearch();
+            DayJournal::Mark(Tag,DayJournal::Search);
             Guy.Aktion = NOTHING;
             break;
         }
@@ -646,6 +658,7 @@ namespace Action
         case 2: case 3:
             Guy.Aktiv = true;
             Guy.Zustand = GUYESSEN;
+            DayJournal::Mark(Tag,DayJournal::Food);
             World::AddResource(NAHRUNG, 15);
             World::AddTime(0, 2);
             break;
@@ -719,6 +732,7 @@ namespace Action
         case 2: case 3:
             Guy.Aktiv = true;
             Guy.Zustand = GUYTRINKEN;
+            DayJournal::Mark(Tag,DayJournal::Water);
             World::AddResource(WASSER, 30);
             World::AddTime(0, 3);
             break;
@@ -770,6 +784,7 @@ namespace Action
         case 9:
             Scape[Guy.Pos.x][Guy.Pos.y].Objekt = -1;
             Expedition::CollectTimber();
+            DayJournal::Mark(Tag,DayJournal::Timber);
             Guy.Aktion = NOTHING;
             break;
         }
@@ -1232,7 +1247,6 @@ namespace Action
             Nacht = true;
             Stunden = 12;
             Minuten = 0;
-            PlaySound(Sound::WOLF, 100);
             // Falsche Objekte Löschen
             if ((Scape[Guy.Pos.x][Guy.Pos.y].Objekt >= BAUM1DOWN) &&
                 (Scape[Guy.Pos.x][Guy.Pos.y].Objekt <= BAUM4DOWN))
@@ -1259,7 +1273,7 @@ namespace Action
                 else
                 {
                     Guy.Aktiv = true;
-                    PapierText = Renderer::DrawText(TAGENDE2, TXTPAPIER, 1);
+                    DayJournal::Begin(Tag);
                 }
             }
             else if ((Scape[Guy.Pos.x][Guy.Pos.y].Objekt == HAUS3) &&
@@ -1267,7 +1281,7 @@ namespace Action
             {
                 World::AddResource(GESUNDHEIT, +20);
                 Guy.Aktiv = true;
-                PapierText = Renderer::DrawText(TAGENDE4, TXTPAPIER, 1);
+                DayJournal::Begin(Tag);
             }
             else if (BootsFahrt)
             {
@@ -1294,7 +1308,7 @@ namespace Action
                 else
                 {
                     Guy.Aktiv = true;
-                    PapierText = Renderer::DrawText(TAGENDE1, TXTPAPIER, 1);
+                    DayJournal::Begin(Tag);
                 }
             }
             break;
@@ -1302,6 +1316,7 @@ namespace Action
             Renderer::Fade(20, 20, 30);
             Nacht = false;
             Tag++;
+            DayJournal::NewDay(Tag);
             Stunden = 0;
             Minuten = 0;
             // if (BootsFahrt) Game::NeuesSpiel(true); // Später hier tot!!

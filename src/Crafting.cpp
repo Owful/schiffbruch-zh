@@ -5,6 +5,7 @@
 #include "World.hpp"
 #include "Action.hpp"
 #include "State.hpp"
+#include "DayJournal.hpp"
 #include <array>
 #include <istream>
 #include <ostream>
@@ -132,10 +133,10 @@ namespace Crafting
         const int product=pendingProduct;Cancel(false);
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return;}
         if(IsSupplyAction(product)){Expedition::CompleteSupplyAction(product);return;}
-        if(product==Waterskin){Expedition::CraftWaterskin();return;}
-        if(product==Bandage){Expedition::CraftBandage();return;}
+        if(product==Waterskin){if(Expedition::CraftWaterskin())DayJournal::Mark(Tag,DayJournal::Craft);return;}
+        if(product==Bandage){if(Expedition::CraftBandage())DayJournal::Mark(Tag,DayJournal::Craft);return;}
         const auto* r=Find(product);for(const auto& cost:r->costs)Guy.Inventar[cost.item]-=cost.count;
-        Guy.Inventar[product]=1;SyncUnlocks();
+        Guy.Inventar[product]=1;SyncUnlocks();DayJournal::Mark(Tag,DayJournal::Craft);
         const auto message=L"制作完成："+Name(product)+L"。"+r->purpose+L"。";Expedition::Notify(message.c_str());
     }
     int MissingForAction(int button)

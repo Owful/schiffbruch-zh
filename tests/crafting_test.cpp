@@ -14,6 +14,7 @@ namespace World
     void AddTime(short h,short m){const int elapsed=PaceRules::workMinutes(h*60+m);Minuten+=elapsed;while(Minuten>=60){++Stunden;Minuten-=60;}}
     void AddResource(short kind,float amount){Guy.Resource[kind]=std::clamp(Guy.Resource[kind]+PaceRules::resourceChange(amount),0.f,100.f);}
 }
+namespace Renderer { void LimitScroll() {} }
 int main()
 {
     int failures=0;const auto check=[&](bool ok,const char* name){if(!ok){++failures;std::cerr<<"FAIL: "<<name<<'\n';}};

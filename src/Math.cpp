@@ -998,6 +998,10 @@ namespace Math
 
         if (Bild % Scape[Guy.Pos.x][Guy.Pos.y].LaufZeit == 0)
         {
+            // Keep the original terrain cadence and walking animation together,
+            // but skip one in three land steps during normal play.
+            static unsigned landStepCadence=0;
+            if(Spielzustand==State::GAME&&!BootsFahrt && (++landStepCadence%3)==0)return;
             Step++;
             short i;
             if (BootsFahrt) i = 4;

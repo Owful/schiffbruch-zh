@@ -97,8 +97,6 @@ namespace Interaction
         {
             const short construction=actionAt(ground.x,ground.y,Intent::ResumeBuild);
             if(construction!=Action::NOTHING)return begin(ground.x,ground.y,construction);
-            const short action=actionAt(ground.x,ground.y,Intent::FoodWater);
-            if(action!=Action::NOTHING)return begin(ground.x,ground.y,action);
         }
         int bx=-1,by=-1,best=std::numeric_limits<int>::max();short selected=Action::NOTHING;
         bool immature=false;
@@ -111,7 +109,9 @@ namespace Interaction
             const bool water=(o>=FLUSS1&&o<=SCHLEUSE6)||(o==ROHR&&t.Phase==1);
             if(!fruit&&!water&&construction==Action::NOTHING)continue;
             const auto& b=Bmp[o];const int px=screenX+Camera.x-t.xScreen-t.ObPos.x,py=screenY+Camera.y-t.yScreen-t.ObPos.y;
-            const int tolerance=water?10:7;
+            // Food and water require a hit on the visible object itself. A click on
+            // nearby ground must remain a movement command, even on the same tile.
+            const int tolerance=construction!=Action::NOTHING?7:0;
             if(px<-tolerance||py<-tolerance||px>=b.Breite+tolerance||py>=b.Hoehe+tolerance)continue;
             int distance=std::max({0,-px,px-b.Breite+1})*std::max({0,-px,px-b.Breite+1})
                 +std::max({0,-py,py-b.Hoehe+1})*std::max({0,-py,py-b.Hoehe+1});

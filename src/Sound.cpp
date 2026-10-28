@@ -4,6 +4,7 @@
 #include "Crafting.hpp"
 #include "ExpeditionRules.hpp"
 #include "State.hpp"
+#include "DayJournal.hpp"
 #include <array>
 #include <cmath>
 #include <fstream>
@@ -115,7 +116,15 @@ namespace Sound
         {
             if(Spielzustand==State::LOGO)target[LOGO]=100;
             else if(Spielzustand==State::OUTRO)target[OUTRO]=100;
-            else if(Spielzustand==State::GAME)environment(target);
+            else if(Spielzustand==State::GAME)
+            {
+                environment(target);
+                if(Guy.Aktion==Action::DAY_END||DayJournal::Active())
+                {
+                    for(int id=1;id<COUNT;++id)if(bus(id)==Ambience)target[id]*=.35f;
+                    target[LOGO]=32;
+                }
+            }
             else if(Spielzustand==State::INTRO||Spielzustand==State::RESCUED)
             {target[SURF]=35;if(Guy.Zustand==GUYSCHIFF)target[STORM]=55;}
             if(Guy.Aktiv&&actionsAllowed)
@@ -144,7 +153,9 @@ namespace Sound
             if(Wav[id].Loop)
             {
                 const float wanted=AudioRules::gain(Wav[id].Volume,int(target[id]),mix[bus(id)]);
-                levels[id]=AudioRules::fade(levels[id],wanted,seconds);players[id].setVolume(levels[id]);
+                if(id==LOGO&&Spielzustand==State::GAME)levels[id]+=(wanted-levels[id])*(1-std::exp(-seconds/1.5f));
+                else levels[id]=AudioRules::fade(levels[id],wanted,seconds);
+                players[id].setVolume(levels[id]);
                 if(levels[id]>.08f&&wanted>0&&players[id].getStatus()!=sf::Sound::Playing)players[id].play();
                 else if(wanted==0&&levels[id]<.08f)players[id].stop();
             }

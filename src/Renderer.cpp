@@ -337,8 +337,9 @@ namespace Renderer
 
         Blitten(lpDDSScape, lpDDSBack, false); // Landschaft zeichnen
 
+        Expedition::DrawCaches(false);
         ZeichneObjekte();
-
+        Expedition::DrawCaches(true);
         Expedition::DrawAtmosphere();
         SceneView::Apply();
         ZeichnePanel();
@@ -374,7 +375,7 @@ namespace Renderer
         }
 
         Expedition::DrawHud();
-
+        ModernUI::DrawNightJournal();
         ModernUI::DrawOverlay();
         // Flippen
         while (true)
