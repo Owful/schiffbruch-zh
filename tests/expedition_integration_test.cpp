@@ -23,6 +23,7 @@ namespace World
     }
 }
 namespace Renderer { void LimitScroll() {} }
+namespace NativeDisplay {sf::Vector2i MousePoint(){return {-1,-1};}}
 namespace
 {
     int failures=0;
@@ -103,12 +104,23 @@ int main()
         }
         lpDDSBack=nullptr;PaceRules::reset();
     }
-    Guy.Pos={caches[0].x,caches[0].y};Expedition::OnSearch();
-    check(current().claimed==1&&Guy.Inventar[ROHSTAMM]==1&&Guy.Inventar[ROHAST]==2&&Guy.Inventar[ROHLIANE]==2,"search claims varied cache rewards");
-    Expedition::OnSearch();check(Guy.Inventar[ROHAST]==2,"claimed cache cannot be farmed repeatedly");
-    setup();Guy.Pos={caches[0].x,caches[0].y};Guy.Inventar[ROHAST]=10;Guy.Inventar[ROHBLATT]=10;Expedition::OnSearch();
-    check(current().claimed==0,"completely full inventory leaves cache unclaimed");
-    for(unsigned i:{1u,2u}) {setup();Guy.Pos={caches[i].x,caches[i].y};Expedition::OnSearch();check((current().claimed&(1u<<i))!=0,"each cache kind can be claimed");check(i==1?Guy.Inventar[ROHSTEIN]==3:current().bandages==1,"cache kinds contain different useful rewards");}
+    setup();Guy.Pos={caches[0].x,caches[0].y};Expedition::OnSearch();
+    check(current().claimed==0,"search never opens a sealed cache");
+    check(!Crafting::StartSupplyAction(Crafting::OpenCache),"cache requires a hammer");
+    Guy.Inventar[ROHHAMMER]=1;
+    check(Crafting::StartSupplyAction(Crafting::OpenCache)&&current().claimed==0&&Guy.Zustand==GUYSCHLAGEN,"hammer action starts before rewards");
+    Crafting::Update(250000,false);check(Crafting::Job().fraction==0,"paused hammer action waits");
+    Crafting::Cancel(false);check(current().claimed==0,"cancelled hammer keeps cache sealed");
+    for(unsigned i=0;i<3;++i){setup();Guy.Inventar[ROHHAMMER]=1;Guy.Pos={caches[i].x,caches[i].y};Crafting::StartSupplyAction(Crafting::OpenCache);finish();check((current().claimed&(1u<<i))!=0,"hammer opens each cache");check(!Crafting::StartSupplyAction(Crafting::OpenCache),"cache cannot be farmed repeatedly");}
+    setup();Guy.Pos={caches[0].x,caches[0].y};Guy.Inventar[ROHHAMMER]=1;
+    for(int item:{ROHAST,ROHSTAMM,ROHSTEIN,ROHBLATT,ROHLIANE})Guy.Inventar[item]=10;
+    check(!Crafting::StartSupplyAction(Crafting::OpenCache)&&current().claimed==0,"full inventory leaves the entire cache sealed");
+    setup();auto& fire=Scape[Guy.Pos.x][Guy.Pos.y];fire.Objekt=FEUER;fire.Timer=.6f;Guy.Inventar[ROHSTAMM]=2;
+    check(Crafting::StartSupplyAction(Crafting::FeedFire)&&fire.Timer==.6f&&Guy.Inventar[ROHSTAMM]==2,"feed action does not consume or refill instantly");
+    Crafting::Cancel(false);check(Guy.Inventar[ROHSTAMM]==2,"cancelled feeding keeps wood");
+    Crafting::StartSupplyAction(Crafting::FeedFire);finish();check(Guy.Inventar[ROHSTAMM]==1&&std::abs(fire.Timer-.3f)<.001f,"feeding consumes one log and restores fuel");
+    Guy.Inventar[ROHSTAMM]=0;Guy.Inventar[ROHAST]=2;Crafting::StartSupplyAction(Crafting::FeedFire);finish();check(Guy.Inventar[ROHAST]==0&&std::abs(fire.Timer-.18f)<.001f,"branches are an alternative fuel");
+    Guy.Inventar[ROHSTAMM]=1;Crafting::StartSupplyAction(Crafting::FeedFire);fire.Objekt=-1;finish();check(Guy.Inventar[ROHSTAMM]==1,"extinguished fire cannot consume wood at completion");
     setup();Scape[12][12].Objekt=SOS;Scape[13][12].Objekt=FEUER;Guy.Inventar[ROHFERNROHR]=1;
     Expedition::OnTime(120,0);check(current().signal==120000,"complete signal setup accumulates time");
     Scape[13][12].Objekt=-1;Expedition::OnTime(60,0);check(current().signal==120000,"extinguished fire pauses rescue progress");

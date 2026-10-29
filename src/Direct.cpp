@@ -106,7 +106,7 @@ namespace Direct
     void CheckMouse()
     {
         const auto screenPoint=NativeDisplay::MousePoint();
-        if(ModernUI::OverlayActive()||screenPoint.x<0||screenPoint.x>=960||screenPoint.y<64||screenPoint.y>=656)return;
+        if(ModernUI::OverlayActive()||ModernUI::FirePanelHit(screenPoint.x,screenPoint.y)||screenPoint.x<0||screenPoint.x>=960||screenPoint.y<64||screenPoint.y>=656)return;
         const auto point=SceneView::ToScene(screenPoint.x,screenPoint.y);
         const short xDiff=MousePosition.x-point.x,yDiff=MousePosition.y-point.y;
         MousePosition.x=static_cast<short>(point.x);MousePosition.y=static_cast<short>(point.y);
@@ -268,6 +268,7 @@ namespace Direct
                 Guy.Aktion = Action::NOTHING;
                 Spielzustand = State::GAME;
                 Guy.PosAlt = Guy.PosScreen;
+                World::IntroDiscovery();
                 Game::SaveGame();
                 return 1;
             }

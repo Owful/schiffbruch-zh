@@ -9,6 +9,8 @@
 #include "Crafting.hpp"
 #include "SceneView.hpp"
 #include "DayJournal.hpp"
+#include "Campfires.hpp"
+#include "NativeDisplay.hpp"
 
 #include <algorithm>
 #include <array>
@@ -24,7 +26,8 @@ namespace Expedition
         ExpeditionRules::Progress progress;
         bool journal = false, effects = true, hud = true;
         std::wstring notice;
-        ULONGLONG noticeUntil = 0;
+        ULONGLONG noticeUntil = 0, cacheHintUntil=0;
+        int cacheHintX=-1,cacheHintY=-1;
         constexpr COLORREF Gold = RGB(224,197,139), Ink = RGB(19,39,40), Muted = RGB(155,177,163);
 
         bool positionValid(int x, int y) { return x >= 0 && y >= 0 && x < int(MAXXKACH) && y < int(MAXYKACH); }
@@ -129,7 +132,7 @@ namespace Expedition
     void Reset()
     {
         progress={};populateCaches();journal=false;
-        Notify(L"岛上偶尔能发现漂流补给。走到木箱所在位置并搜索，可以取得里面的物资。");
+        Notify(L"岛上偶尔能发现漂流补给。点击木箱，用木石锤砸开后取得物资。");
     }
     void Save(std::ostream& out) { ExpeditionRules::write(out,progress); }
     void Load(std::istream& in)
@@ -158,27 +161,24 @@ namespace Expedition
             }
         }
     }
-    void OnSearch()
+    int CacheAt(int x,int y)
     {
-        if(BootsFahrt)return;
-        for(unsigned i=0;i<progress.caches.size();++i)
-        {
-            const auto& cache=progress.caches[i];
-            if((progress.claimed&(1u<<i)) || cache.x!=Guy.Pos.x || cache.y!=Guy.Pos.y)continue;
-            struct Reward {int item,count;const wchar_t* name;};
-            const std::array<Reward,3> supplies = cache.kind==0 ? std::array<Reward,3>{{{ROHSTAMM,1,L"原木"},{ROHAST,2,L"树枝"},{ROHLIANE,2,L"藤蔓"}}} :
-                cache.kind==1 ? std::array<Reward,3>{{{ROHSTEIN,3,L"石头"},{ROHAST,2,L"树枝"},{ROHBLATT,2,L"棕叶"}}} :
-                std::array<Reward,3>{{{ROHLIANE,2,L"藤蔓"},{ROHBLATT,3,L"棕叶"},{ROHSTEIN,1,L"石头"}}};
-            for(const auto& r:supplies)if(Guy.Inventar[r.item]+r.count>10)
-            {std::wstring message=L"携带空间不足，补给箱仍留在这里。请为"+std::wstring(r.name)+L"腾出至少 "+std::to_wstring(r.count)+L" 格空间后再搜索。";Notify(message.c_str());return;}
-            if(cache.kind==2&&progress.bandages>=3){Notify(L"绷带已满，补给箱仍留在这里。使用绷带后再搜索。");return;}
-            std::wstring message=L"找到漂流补给：";
-            for(const auto& r:supplies){give(r.item,r.count);message+=std::wstring(r.name)+L" +"+std::to_wstring(r.count)+L"，";}
-            if(cache.kind==2){++progress.bandages;DayJournal::RecordLoot(Tag,DayJournal::Bandage,1);message+=L"绷带 +1，";}
-            message.replace(message.size()-1,1,L"。");
-            progress.claimed|=static_cast<std::uint8_t>(1u<<i);DayJournal::Mark(Tag,DayJournal::Cache);Notify(message.c_str());return;
-        }
+        for(unsigned i=0;i<progress.caches.size();++i)if(!(progress.claimed&(1u<<i))&&progress.caches[i].x==x&&progress.caches[i].y==y)return int(i);
+        return -1;
     }
+    struct Reward {int item,count;DayJournal::Loot journal;};
+    std::array<Reward,3> cacheRewards(int index)
+    {
+        const auto& c=progress.caches[index];
+        unsigned seed=unsigned(c.x)*73856093u ^ unsigned(c.y)*19349663u ^ unsigned(c.kind)*83492791u;
+        const int items[]={ROHSTAMM,ROHAST,ROHSTEIN,ROHBLATT,ROHLIANE};
+        const DayJournal::Loot kinds[]={DayJournal::Log,DayJournal::Branch,DayJournal::Stone,DayJournal::Leaf,DayJournal::Vine};
+        const unsigned first=seed%5,second=(first+1+(seed/5)%4)%5;
+        unsigned third=(second+1)%5;if(third==first)third=(third+1)%5;
+        return {{{items[first],1+int((seed>>4)%3),kinds[first]},{items[second],1+int((seed>>8)%3),kinds[second]},{items[third],1+int((seed>>12)%2),kinds[third]}}};
+    }
+    void CacheHint(int x,int y){cacheHintX=x;cacheHintY=y;cacheHintUntil=GetTickCount64()+3000;}
+    void OnSearch() {} // Searching around never opens a sealed cache.
     bool CraftWaterskin()
     {
         if(!ready()){Notify(L"请先完成当前动作并关闭提示，再制作水壶。");return false;}
@@ -219,6 +219,20 @@ namespace Expedition
     }
     std::wstring SupplyProblem(int action)
     {
+        if(action==Crafting::OpenCache)
+        {
+            if(BootsFahrt)return L"请先靠岸，再砸开漂流箱。";
+            const int index=CacheAt(Guy.Pos.x,Guy.Pos.y);if(index<0)return L"这里没有未打开的漂流补给箱。";
+            if(Guy.Inventar[ROHHAMMER]<1)return L"箱子钉得很牢，需要木石锤。请先在制作里准备木石锤。";
+            for(const auto& r:cacheRewards(index))if(Guy.Inventar[r.item]+r.count>10)return L"携带空间不足，请先使用一些材料。箱子和里面的物资会留在这里。";
+            return L"";
+        }
+        if(action==Crafting::FeedFire)
+        {
+            if(BootsFahrt||Scape[Guy.Pos.x][Guy.Pos.y].Objekt!=FEUER)return L"需要走到仍在燃烧的篝火旁添柴。";
+            if(Scape[Guy.Pos.x][Guy.Pos.y].Timer<=.02f)return L"篝火燃料充足，稍后再添柴吧。";
+            return Guy.Inventar[ROHSTAMM]>0||Guy.Inventar[ROHAST]>=2?L"":L"添柴需要原木 1，或树枝 2。";
+        }
         if(action==Crafting::ApplyBandage)
         {
             if(!progress.bandages)return L"还没有可用绷带，请打开“制作 → 补给”制作。";
@@ -238,7 +252,19 @@ namespace Expedition
     {
         if(!ready())return;
         const auto problem=SupplyProblem(action);if(!problem.empty()){Notify(problem.c_str());return;}
-        if(action==Crafting::FillWater)
+        if(action==Crafting::OpenCache)
+        {
+            const int index=CacheAt(Guy.Pos.x,Guy.Pos.y);std::wstring message=L"砸开漂流补给箱：";
+            for(const auto& r:cacheRewards(index)){const int gained=give(r.item,r.count);DayJournal::RecordLoot(Tag,r.journal,gained);message+=Crafting::Name(r.item)+L" +"+std::to_wstring(gained)+L"，";}
+            message.back()=L'。';progress.claimed|=std::uint8_t(1u<<index);DayJournal::Mark(Tag,DayJournal::Cache);Notify(message.c_str());
+        }
+        else if(action==Crafting::FeedFire)
+        {
+            const bool log=Guy.Inventar[ROHSTAMM]>0;Guy.Inventar[log?ROHSTAMM:ROHAST]-=log?1:2;
+            auto& t=Scape[Guy.Pos.x][Guy.Pos.y];t.Timer=std::max(0.f,t.Timer-(log?.30f:.12f));
+            Notify(log?L"添柴完成：原木 −1，篝火燃料增加 30%。":L"添柴完成：树枝 −2，篝火燃料增加 12%。");
+        }
+        else if(action==Crafting::FillWater)
         {progress.water=3;progress.waterVisited=true;Notify(L"水壶已装满：3 / 3。");}
         else if(action==Crafting::DrinkWater)
         {--progress.water;World::AddResource(WASSER,25);DayJournal::Mark(Tag,DayJournal::Water);Notify(L"喝下一份储存的淡水，水分 +25。");}
@@ -281,10 +307,11 @@ namespace Expedition
         {
             if(!built(t,FEUER)||!t.Entdeckt)continue;
             const int x=t.xScreen+t.ObPos.x+Bmp[FEUER].Breite/2-Camera.x;
-            const int y=t.yScreen+t.ObPos.y-Camera.y;
+            const auto flame=Campfires::Sprite(t);
+            const int y=flame.y-Camera.y;
             if(x<0||y<0||x>rcSpielflaeche.right||y>rcSpielflaeche.bottom)continue;
             const int phase=int(GetTickCount64()/55);
-            for(int i=0;i<4;++i){const int h=(phase+i*13)%48;const int dx=int(std::sin((phase+i)*.14)*5)+h/7;stroke(dc,x+dx,y-h,x+dx+3,y-h-3,RGB(170+h,137+h,85+h));}
+            for(int i=0;i<Campfires::Stage(t.Timer);++i){const int h=((phase+i*13)%48)*Campfires::Stage(t.Timer)/5;const int dx=int(std::sin((phase+i)*.14)*5)+h/7+int(h*Campfires::Wind()*.3f);stroke(dc,x+dx,y-h,x+dx+3,y-h-3,RGB(170+h,137+h,85+h));}
         }
         RestoreDC(dc,fireSaved);lpDDSBack->ReleaseDC(dc);
     }
@@ -317,10 +344,13 @@ namespace Expedition
             const auto& cache=progress.caches[i];if((progress.claimed&(1u<<i))||!positionValid(cache.x,cache.y))continue;
             const auto& tile=Scape[cache.x][cache.y];if(!tile.Entdeckt)continue;
             const int x=tile.xScreen+27-Camera.x,y=tile.yScreen+29-Camera.y;
-            if(std::abs(MousePosition.x-x)>=30||std::abs(MousePosition.y-y)>=30)continue;
+            const auto mouse=NativeDisplay::MousePoint();const auto scene=SceneView::ToScene(mouse.x,mouse.y);
+            const bool hovered=mouse.x>=0&&mouse.x<960&&mouse.y>=64&&mouse.y<656&&std::abs(scene.x-x)<16&&std::abs(scene.y-y)<18;
+            if(!hovered&&!(cacheHintX==cache.x&&cacheHintY==cache.y&&GetTickCount64()<cacheHintUntil))continue;
             const auto screen=SceneView::ToScreen(x,y);
             if(screen.x<0||screen.x>=960||screen.y<64||screen.y>=656)continue;
-            panel(dc,screen.x-76,screen.y-35,154,23);text(dc,screen.x-65,screen.y-33,L"漂流补给 · 搜索拾取",Gold,1);
+            const int hx=std::clamp(screen.x-53,8,846),hy=std::clamp(screen.y-35,68,625);
+            panel(dc,hx,hy,106,22);text(dc,hx+8,hy+3,Guy.Inventar[ROHHAMMER]>0?L"点击锤开箱子":L"需木石锤",Gold,1);
         }
         if(GetTickCount64()<noticeUntil&&!notice.empty())
         {

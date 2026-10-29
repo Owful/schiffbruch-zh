@@ -14,6 +14,7 @@
 #include "Crafting.hpp"
 #include "Nightfall.hpp"
 #include "DayJournal.hpp"
+#include "Campfires.hpp"
 
 #include <fstream>
 
@@ -49,7 +50,7 @@ namespace Game
         }
         Expedition::Save(ofs);
         PaceRules::save(ofs);
-        ClockRules::save(ofs);Crafting::Save(ofs);DayJournal::Save(ofs);
+        ClockRules::save(ofs);Crafting::Save(ofs);DayJournal::Save(ofs);Campfires::Save(ofs);
         ofs.flush();
         if (!ofs) return;
         ofs.close();
@@ -61,7 +62,7 @@ namespace Game
     bool LoadGame()
     {
         PaceRules::reset();
-        ClockRules::reset();Crafting::Reset();Nightfall::Reset();DayJournal::Reset();
+        ClockRules::reset();Crafting::Reset();Nightfall::Reset();DayJournal::Reset();Campfires::Reset();
         Survival::Reset();
         std::ifstream ifs("save.dat", std::ios::binary); // | ios::nocreate);
         if (!ifs) return (false);
@@ -101,6 +102,7 @@ namespace Game
         if(!ifs)ifs.clear();ClockRules::load(ifs);
         if(!ifs)ifs.clear();Crafting::Load(ifs);
         if(!ifs)ifs.clear();DayJournal::Load(ifs,Tag);
+        if(!ifs)ifs.clear();Campfires::Load(ifs);Campfires::Sync();
         if(Guy.Aktion==Action::DAY_END&&Guy.AkNummer==7&&Stunden==12&&PapierText==-1)
         {Nacht=true;DayJournal::Begin(Tag);}
         return true;
@@ -2305,7 +2307,7 @@ namespace Game
     void NeuesSpiel(bool neu)
     {
         PaceRules::reset();
-        ClockRules::reset();Crafting::Reset();Nightfall::Reset();DayJournal::Reset();
+        ClockRules::reset();Crafting::Reset();Nightfall::Reset();DayJournal::Reset();Campfires::Reset();
         Survival::Reset();
         short x, y;
         bool LoadOK = false;

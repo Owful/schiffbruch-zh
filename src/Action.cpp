@@ -1,6 +1,7 @@
 #include "Action.hpp"
 #include "Expedition.hpp"
 #include "DayJournal.hpp"
+#include "Campfires.hpp"
 
 #include "types.hpp"
 
@@ -182,6 +183,7 @@ namespace Action
             Guy.PosAlt = Guy.PosScreen;
             Spielzustand = State::GAME;
             Guy.Aktion = NOTHING;
+            World::IntroDiscovery();
             PapierText = Renderer::DrawText(INTROTEXT, TXTPAPIER, 1);
             Game::SaveGame();
             break;
@@ -939,6 +941,7 @@ namespace Action
             Scape[Guy.Pos.x][Guy.Pos.y].Objekt = FEUER;
             Scape[Guy.Pos.x][Guy.Pos.y].ObPos.x = static_cast<short>(Bmp[FEUER].rcDes.left);
             Scape[Guy.Pos.x][Guy.Pos.y].ObPos.y = static_cast<short>(Bmp[FEUER].rcDes.top);
+            Scape[Guy.Pos.x][Guy.Pos.y].Timer=0;Campfires::Register(Guy.Pos.x,Guy.Pos.y);
             Chance += 2 + 2 * Scape[Guy.Pos.x][Guy.Pos.y].Hoehe;
             World::AddTime(0, 2);
             Guy.PosScreen.x -= 5;

@@ -16,6 +16,7 @@
 #include "ModernUI.hpp"
 #include "SceneView.hpp"
 #include "Survival.hpp"
+#include "Campfires.hpp"
 #include "Localization.hpp"
 
 #include <cmath>
@@ -237,7 +238,14 @@ namespace Renderer
                             }
                         }
 
-                        ZeichneBilder(Scape[x][y].xScreen + Scape[x][y].ObPos.x - Camera.x,
+                        if(Scape[x][y].Objekt==FEUER)
+                        {
+                            const auto bounds=Campfires::Sprite(Scape[x][y]);const auto& b=Bmp[FEUER];
+                            RECT source=b.rcSrc;source.top+=int(Scape[x][y].Phase)*b.Hoehe;source.bottom=source.top+b.Hoehe;
+                            RECT destination{bounds.x-Camera.x,bounds.y-Camera.y,bounds.x-Camera.x+bounds.w,bounds.y-Camera.y+bounds.h};
+                            lpDDSBack->Blt(&destination,b.Surface,&source,DDBLT_KEYSRC,nullptr);
+                        }
+                        else ZeichneBilder(Scape[x][y].xScreen + Scape[x][y].ObPos.x - Camera.x,
                                       Scape[x][y].yScreen + Scape[x][y].ObPos.y - Camera.y,
                                       Scape[x][y].Objekt, rcSpielflaeche, false,
                                       static_cast<short>(Scape[x][y].Phase));

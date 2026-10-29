@@ -22,6 +22,7 @@ namespace Sound
         sf::Clock clock;
         AudioRules::AnimationGate animation;
         int supply=-1,character=NOTHING,characterPose=-1,variation=0;
+        int supplyBeat=-1;
         float stepTime=0;
         bool hasFocus=true,actionsAllowed=true;
 
@@ -67,7 +68,7 @@ namespace Sound
     {
         players.clear();buffers.clear();buffers.resize(COUNT);players.resize(COUNT);
         loaded.fill(false);levels.fill(0);requested.fill(0);lastPlayed.fill(-1000);
-        animation={};supply=-1;character=NOTHING;characterPose=-1;stepTime=0;
+        animation={};supply=-1;supplyBeat=-1;character=NOTHING;characterPose=-1;stepTime=0;
         std::ifstream file("audio-settings.cfg");std::string magic;int enabled=1,a=55,b=68,c=80;
         if(file>>magic>>enabled>>a>>b>>c&&magic=="AUDIO1")
         {mix={std::clamp(a,0,100),std::clamp(b,0,100),std::clamp(c,0,100)};Soundzustand=enabled?1:0;}
@@ -129,6 +130,7 @@ namespace Sound
             {target[SURF]=35;if(Guy.Zustand==GUYSCHIFF)target[STORM]=55;}
             if(Guy.Aktiv&&actionsAllowed)
             {
+                if(Crafting::Job().product==Crafting::FeedFire)target[FIRE]=85;
                 if(Guy.Zustand==GUYSCHWIMMEN)target[SWIM]=65;
                 if(Guy.Zustand==GUYSCHLAFEN||Guy.Zustand==GUYSCHLAFZELT||Guy.Zustand==GUYSCHLAFHAUS)target[SNORE]=55;
             }
@@ -172,20 +174,29 @@ namespace Sound
         const bool edge=animation.observe(Guy.Zustand,active?int(Bmp[Guy.Zustand].Phase):0,active);
         if(character!=NOTHING&&(!active||Guy.Zustand!=characterPose))
         {StopSound(short(character));character=NOTHING;}
-        if(!active){supply=-1;stepTime=0;return;}
+        if(!active){supply=-1;supplyBeat=-1;stepTime=0;return;}
         int cue=Bmp[Guy.Zustand].Sound;
         const bool usingSupply=Guy.Aktion==Action::CRAFT&&Crafting::UsingSupply();
         bool trigger=edge;
         if(usingSupply)
         {
-            const int product=Crafting::Job().product;trigger=supply!=product;supply=product;
-            cue=product==Crafting::FillWater?FILL:product==Crafting::ApplyBandage?BANDAGE:DRINK;
+            const int product=Crafting::Job().product;
+            const int beat=product==Crafting::OpenCache?int(Crafting::Job().fraction*3):0;
+            if(product==Crafting::OpenCache)
+            {
+                if(supply!=product)supplyBeat=-1;
+                trigger=int(Bmp[Guy.Zustand].Phase)==Bmp[Guy.Zustand].Anzahl-1&&supplyBeat!=beat;
+                supply=product;if(trigger)supplyBeat=beat;
+            }
+            else if(product==Crafting::FeedFire){trigger=Crafting::Job().fraction>=.4f&&supply!=product;if(trigger)supply=product;}
+            else {trigger=supply!=product;supply=product;supplyBeat=beat;}
+            cue=product==Crafting::OpenCache?HAMMER:product==Crafting::FeedFire?HIT:product==Crafting::FillWater?FILL:product==Crafting::ApplyBandage?BANDAGE:DRINK;
         }
-        else supply=-1;
+        else {supply=-1;supplyBeat=-1;}
         if(trigger&&valid(cue)&&!Wav[cue].Loop)
         {
-            PlaySound(short(cue),100);character=cue;characterPose=Guy.Zustand;
-            if(usingSupply&&Crafting::Job().fraction>.1f)
+            PlaySound(short(cue),Crafting::Job().product==Crafting::FeedFire?50:100);character=cue;characterPose=Guy.Zustand;
+            if(usingSupply&&Crafting::Job().product!=Crafting::OpenCache&&Crafting::Job().product!=Crafting::FeedFire&&Crafting::Job().fraction>.1f)
             {const float duration=buffers[cue].getDuration().asSeconds();players[cue].setPlayingOffset(sf::seconds(std::min(duration*.9f,Crafting::Job().fraction*duration)));}
         }
         if(Guy.Zustand>=GUYLINKS&&Guy.Zustand<=GUYUNTEN)

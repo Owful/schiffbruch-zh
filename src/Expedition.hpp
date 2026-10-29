@@ -12,6 +12,8 @@ namespace Expedition
     void Load(std::istream& in);
     void OnTime(int minutes, int startingHour);
     void OnSearch();
+    int CacheAt(int x,int y);
+    void CacheHint(int x,int y);
     void UseWaterskin();
     bool NearFreshwater();void FillWaterskin();void DrinkWaterskin();
     void UseBandage();

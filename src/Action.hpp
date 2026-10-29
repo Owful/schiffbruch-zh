@@ -40,6 +40,8 @@ namespace Action
         DEATH = 29,
         DAY_RESTART = 30,
         CRAFT = 31,
+        OPEN_CACHE = 32,
+        FEED_FIRE = 33,
     };
 
     void handler(short event);

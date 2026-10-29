@@ -21,6 +21,7 @@
 #include "Construction.hpp"
 #include "DuskNotice.hpp"
 #include "DayJournal.hpp"
+#include "Campfires.hpp"
 #include "State.hpp"
 #include <SFML/Window.hpp>
 #include <array>
@@ -41,6 +42,8 @@ namespace ModernUI
         int safety=0;
         DuskNotice::State duskNotice;
         int selection=-1;
+        std::vector<Campfires::Info> fireList;
+        bool fireDetails=false;int fireOffset=0;RECT fireArea{632,70,948,112};
         int craftCategory=0,craftOffset=0;
         HDC active=nullptr;
         std::array<HFONT,4> fonts{};
@@ -129,11 +132,41 @@ namespace ModernUI
             txt(24,17,L"漂流之境",25,GOLD);txt(164,25,L"荒岛生存",13,MUTED);
             const wchar_t* names[]={L"水分",L"饱食",L"生命"};
             const COLORREF colors[]={Guy.Resource[0]<50?RGB(224,126,98):RGB(115,172,185),Guy.Resource[1]<50?RGB(224,126,98):RGB(194,177,116),Guy.Resource[2]<=35?RGB(235,103,91):GREEN};
-            for(int i=0;i<3;++i){const int x=350+i*138;txt(x,13,names[i],13,MUTED);txt(x+76,13,std::to_wstring(int(Guy.Resource[i])),13,FG);fill(x,39,108,4,LINE);fill(x,39,int(108*std::clamp(Guy.Resource[i],0.f,100.f)/100),4,colors[i]);}
+            for(int i=0;i<3;++i){const int x=300+i*112;txt(x,13,names[i],13,MUTED);txt(x+64,13,std::to_wstring(int(Guy.Resource[i])),13,FG);fill(x,39,88,4,LINE);fill(x,39,int(88*std::clamp(Guy.Resource[i],0.f,100.f)/100),4,colors[i]);}
+            if(!fireList.empty())
+            {
+                button(646,10,124,42,L"篝火 · "+std::to_wstring(fireList.size()),[]{});
+            }
             const auto w=ExpeditionRules::weather(Tag);const wchar_t* weather=w==ExpeditionRules::Weather::Clear?L"晴朗":w==ExpeditionRules::Weather::Rain?L"阵雨":L"风暴";
             wchar_t clock[64]{};std::swprintf(clock,64,L"第 %d 天  %02d:%02d  ·  %ls",Tag,Stunden+6,Minuten,weather);txt(790,24,clock,16,GOLD);
             txt(790,47,Nightfall::Pending()?L"收工后自动返营休息":L"持续走时 · 一天约4分48秒",13,MUTED);
             button(1144,13,112,38,L"菜单  Esc",[]{paused=true;});
+        }
+        void firePanel()
+        {
+            const bool wasOpen=fireDetails;fireDetails=false;if(fireList.empty()||PapierText!=-1||Nacht)return;
+            const auto mouse=NativeDisplay::MousePoint();
+            const int rows=std::min(8,int(fireList.size()));fireArea={632,70,948,112+rows*50+22};
+            bool show=Campfires::Affected()||inside(mouse.x,mouse.y,RECT{646,10,770,64})||(wasOpen&&inside(mouse.x,mouse.y,fireArea));
+            int hover=-1;
+            if(mouse.x>=0&&mouse.x<960&&mouse.y>=64&&mouse.y<656&&!(wasOpen&&inside(mouse.x,mouse.y,fireArea)))
+            {
+                const auto scene=SceneView::ToScene(mouse.x,mouse.y);
+                for(int i=0;i<int(fireList.size());++i){const auto& f=fireList[i];const auto b=Campfires::Sprite(Scape[f.x][f.y]);if(scene.x+Camera.x>=b.x&&scene.x+Camera.x<b.x+b.w&&scene.y+Camera.y>=b.y&&scene.y+Camera.y<b.y+b.h){show=true;hover=i;break;}}
+            }
+            if(!show)return;
+            if(hover>=0)fireOffset=(hover/8)*8;
+            fireOffset=std::clamp(fireOffset,0,std::max(0,int(fireList.size())-rows));fireDetails=true;
+            fill(fireArea.left,fireArea.top,316,fireArea.bottom-fireArea.top,BG);fill(632,70,316,2,GOLD);
+            txt(645,81,Campfires::Affected()?L"风雨正在影响篝火":L"篝火 · 剩余现实时间",16,GOLD);
+            for(int row=0;row<rows&&fireOffset+row<int(fireList.size());++row)
+            {
+                const auto f=fireList[fireOffset+row];const int y=112+row*50;fill(640,y,300,46,CARD);
+                txt(650,y+4,f.name,13,FG);txt(797,y+4,Campfires::Countdown(f.seconds),13,GOLD);
+                txt(650,y+25,Campfires::Effect(),13,MUTED);
+                button(868,y+8,64,29,L"添柴",[f]{Interaction::Target(f.x,f.y,Interaction::Intent::FeedFire);});
+            }
+            txt(645,fireArea.bottom-18,fireList.size()>8?L"滚轮翻看 · "+std::to_wstring(fireOffset+1)+L"–"+std::to_wstring(std::min(fireOffset+rows,int(fireList.size())))+L" / "+std::to_wstring(fireList.size()):L"现实分:秒 · 暂停与失焦时停计",13,MUTED);
         }
         void sidebar()
         {
@@ -234,7 +267,7 @@ namespace ModernUI
     }
     void DrawPanel()
     {
-        Layout();buttons.clear();overlayStart=0;
+        Layout();buttons.clear();overlayStart=0;fireList=Campfires::All();
         RECT source{0,0,120,120};lpDDSBack->Blt(&rcKarte,lpDDSKarte,&source,0,nullptr);
         begin(lpDDSBack);top();sidebar();bottom();
         fill(812+Guy.Pos.x*2,84+Guy.Pos.y*2,3,3,GOLD);
@@ -266,8 +299,9 @@ namespace ModernUI
             fill(18,136,760,height,RGB(63,37,32));fill(18,136,3,height,RGB(224,126,98));
             SetTextColor(active,RGB(245,200,173));DrawTextW(active,message.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX);SelectObject(active,old);
         }
-        end();
+        firePanel();end();
     }
+    bool FirePanelHit(int x,int y){return fireDetails&&inside(x,y,fireArea);}
     bool OverlayActive(){return safety||paused||journal||confirmNew||Spielzustand==State::LOGO||Spielzustand==State::OUTRO;}
     bool DuskNoticeVisible(){return duskNotice.visible(GetTickCount64());}
     void CheckSafety()
@@ -283,13 +317,11 @@ namespace ModernUI
     bool ShouldQuit(){return quit;}
     void StartGame(bool fresh)
     {
-        paused=false;settings=false;journal=false;craft=false;safety=0;duskNotice.reset();Survival::Reset();Interaction::Cancel();NativeDisplay::SetFade(1,1,1);
+        paused=false;settings=false;journal=false;craft=false;safety=0;fireDetails=false;fireOffset=0;duskNotice.reset();Survival::Reset();Interaction::Cancel();NativeDisplay::SetFade(1,1,1);
         Game::NeuesSpiel(fresh);
         LAnimation=true;for(int i=MEERWELLEN;i<=SCHLEUSE6;++i)Bmp[i].Animation=true;World::Generate();
         Crafting::SyncUnlocks();
-        if(Spielzustand==State::INTRO){Direct::QueueKeyPress(sf::Keyboard::Return);Direct::CheckKey();}
         HauptMenue=Menu::ACTION;Layout();
-        if(fresh){for(auto& column:Scape)for(auto& tile:column)tile.Entdeckt=false;World::Entdecken(false);World::Generate();}
         Camera.x=Guy.PosScreen.x-480;Camera.y=Guy.PosScreen.y-360;
         Renderer::LimitScroll();
         Expedition::Notify(L"单击地面即可移动。按 E 互动；打开“制作”准备工具。天黑前寻找庇护所。");
@@ -420,7 +452,7 @@ namespace ModernUI
             if(Frage==0){if(inside(x,y,Bmp[JA].rcDes))closePaper(true);else if(inside(x,y,Bmp[NEIN].rcDes))closePaper(false);}
             else closePaper(true);return true;
         }
-        if(Spielzustand==State::GAME&&!OverlayActive()&&inside(x,y,rcKarte))
+        if(Spielzustand==State::GAME&&!OverlayActive()&&!FirePanelHit(x,y)&&inside(x,y,rcKarte))
         {
             const auto old=MousePosition;MousePosition={short(x),short(y)};Math::MouseInPanel(0,0);MousePosition=old;return true;
         }
@@ -431,7 +463,7 @@ namespace ModernUI
             auto fn=b.click;if(!b.enabled&&Spielzustand==State::LOGO)return true;
             fn();return true;
         }
-        if(OverlayActive()||x>=960||y<64||y>=656)return true;
+        if(OverlayActive()||FirePanelHit(x,y)||x>=960||y<64||y>=656)return true;
         if(Crafting::Busy()||Nightfall::Pending())
         {const auto message=Crafting::Busy()?L"正在"+std::wstring(Crafting::UsingSupply()?L"":L"制作")+Crafting::Name(Crafting::Job().product)+L"，可等待完成或点击下方停止按钮。":L"正在收工返营，请稍候。";Expedition::Notify(message.c_str());return true;}
         if(Spielzustand==State::GAME){const auto p=SceneView::ToScene(x,y);return Interaction::Click(p.x,p.y);}return false;
@@ -439,6 +471,7 @@ namespace ModernUI
     bool HandleWheel(float delta,int x,int y)
     {
         if(OverlayActive()||PapierText!=-1)return true;
+        if(FirePanelHit(x,y)){fireOffset=std::clamp(fireOffset+(delta<0?1:delta>0?-1:0),0,std::max(0,int(fireList.size())-8));return true;}
         if(craft&&x>=960&&y>=196&&y<666){const int count=int(craftRows().size());craftOffset=std::clamp(craftOffset+(delta<0?1:delta>0?-1:0),0,std::max(0,count-4));return true;}
         if(Spielzustand==State::GAME&&x>=0&&x<960&&y>=64&&y<656){SceneView::Zoom(delta,x,y);Direct::Reset();return true;}return false;
     }
@@ -465,6 +498,7 @@ namespace ModernUI
         const auto& t=Scape[Guy.Pos.x][Guy.Pos.y];const int old=HauptMenue;HauptMenue=Menu::ACTION;
         if(Interaction::Request(Interaction::Intent::Any)){HauptMenue=old;return;}
         if((t.Objekt>=FLUSS1&&t.Objekt<=SCHLEUSE6)||(t.Objekt==ROHR&&t.Phase==1)||((t.Objekt==BUSCH||t.Objekt==FELD)&&t.Phase==Bmp[t.Objekt].Anzahl-1))legacy(BUTTESSEN);
+        else if(t.Objekt==FEUER)Interaction::Target(Guy.Pos.x,Guy.Pos.y,Interaction::Intent::FeedFire);
         else if(t.Objekt==FEUERSTELLE)legacy(BUTTANZUENDEN);
         else if(t.Objekt==ZELT||t.Objekt==HAUS3)legacy(BUTTSCHLAFEN);
         else legacy(BUTTSUCHEN);

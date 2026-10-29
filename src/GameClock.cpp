@@ -4,6 +4,7 @@
 #include "World.hpp"
 #include "Action.hpp"
 #include "State.hpp"
+#include "Campfires.hpp"
 
 namespace GameClock
 {
@@ -14,6 +15,7 @@ namespace GameClock
     }
     void Advance(std::int64_t micros,bool focused)
     {
+        Campfires::Advance(micros,focused&&Spielzustand==State::GAME&&!ModernUI::OverlayActive()&&PapierText==-1&&Guy.Aktion!=Action::DEATH&&Guy.Aktion!=Action::RESCUED);
         const int minutes=ClockRules::advance(micros,Running(focused));
         for(int i=0;i<minutes;++i)
         {

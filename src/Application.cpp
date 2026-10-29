@@ -25,6 +25,9 @@
 #include "Construction.hpp"
 #include "AudioRules.hpp"
 #include "DayJournal.hpp"
+#include "ExpeditionRules.hpp"
+#include "Campfires.hpp"
+#include <sstream>
 
 #include <ctime>
 #include <algorithm>
@@ -45,7 +48,20 @@ bool Application::checkRevision()
     const auto finish=[&](){for(int i=0;i<100&&Crafting::Busy();++i)Crafting::Update(100000,true);require(!Crafting::Busy(),"craft did not finish");};
     try
     {
-        ModernUI::StartGame(true);PapierText=-1;Frage=-1;Guy.Aktiv=false;Guy.Aktion=Action::NOTHING;
+        ModernUI::StartGame(true);
+        require(Spielzustand==State::INTRO&&Guy.Aktion==Action::INTRO,"new game did not start the shipwreck intro");
+        LastBild=60;Bild=0;
+        bool sawShipwreck=false,sawSwim=false;
+        for(int i=0;i<40000&&Spielzustand==State::INTRO;++i)
+        {
+            ++Bild;Math::Animationen();if(!Guy.Aktiv)Action::handler(Guy.Aktion);
+            sawShipwreck|=Guy.Zustand==GUYSCHIFFDOWN;sawSwim|=Guy.Zustand==GUYSCHWIMMEN;
+        }
+        require(Spielzustand==State::GAME&&sawShipwreck&&sawSwim,"shipwreck intro did not complete through crash and swimming");
+        for(int y=0;y<MAXYKACH;++y)for(int x=0;x<MAXXKACH;++x)
+            require(Scape[x][y].Entdeckt==(std::abs(x-Guy.Pos.x)<=1&&std::abs(y-Guy.Pos.y)<=1),"intro landing visibility is not centered 3x3");
+        const auto startGameForCheck=[](){ModernUI::StartGame(true);Direct::QueueKeyPress(sf::Keyboard::Return);Direct::CheckKey();};
+        startGameForCheck();PapierText=-1;Frage=-1;Guy.Aktiv=false;Guy.Aktion=Action::NOTHING;
         if(std::filesystem::exists("legacy-save.dat"))
         {
             std::filesystem::copy_file("legacy-save.dat","save.dat",std::filesystem::copy_options::overwrite_existing);
@@ -65,7 +81,7 @@ bool Application::checkRevision()
         const int seeds[]={1,7,42,2026};
         for(int n=0;n<4;++n)
         {
-            std::srand(seeds[n]);ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();PaceRules::reset();Stunden=Minuten=0;
+            std::srand(seeds[n]);startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();PaceRules::reset();Stunden=Minuten=0;
             for(int y=0;y<MAXYKACH;++y)for(int x=0;x<MAXXKACH;++x)
                 require(Scape[x][y].Entdeckt==(std::abs(x-Guy.Pos.x)<=1&&std::abs(y-Guy.Pos.y)<=1),"new game visibility is not centered 3x3");
             Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
@@ -111,7 +127,7 @@ bool Application::checkRevision()
             Interaction::StopSafely();Game::SaveGame();require(Game::LoadGame()&&Guy.Inventar[ROHHAMMER]==1&&Guy.Inventar[ROHSTREICHHOLZ]==1&&PaceRules::zoomStep==8,"new save did not preserve tools or zoom");
             report<<"    {\"seed\":"<<seeds[n]<<",\"action_time_jump\":0,\"idle_minutes_per_24_seconds\":60,\"loss\":5,\"tools_crafted\":7,\"zoomed_clicks\":"<<clicks<<",\"save_roundtrip\":true}"<<(n==3?"":",")<<"\n";
         }
-        ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();
+        startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();
         for(int item:{ROHAST,ROHSTEIN,ROHLIANE,ROHBLATT,ROHSTAMM})Guy.Inventar[item]=10;
         Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
         const auto click=[&](int x,int y){ModernUI::DrawPanel();require(ModernUI::HandleClick(x,y),"panel click was not handled");finish();};
@@ -148,7 +164,7 @@ bool Application::checkRevision()
         ModernUI::HandleWheel(1,480,400);require(PaceRules::zoomStep==startZoom+1,"world wheel did not zoom");
         ModernUI::HandleKey(sf::Keyboard::Escape);ModernUI::HandleWheel(1,480,400);
         require(PaceRules::zoomStep==startZoom+1,"pause menu allowed map zoom");ModernUI::HandleKey(sf::Keyboard::Escape);
-        ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();
+        startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();
         Guy.Inventar[ROHAST]=Guy.Inventar[ROHSTEIN]=10;
         require(Crafting::Make(ROHAXT),"saved job did not start");for(int i=0;i<4;++i)Crafting::Update(250000,true);
         const float fraction=Crafting::Job().fraction;Game::SaveGame();require(Game::LoadGame()&&Crafting::Busy()&&Crafting::Job().fraction==fraction,"active crafting job did not survive native save/load");finish();
@@ -156,7 +172,7 @@ bool Application::checkRevision()
 
         // Exercise real route following and tent-entry animations at night.
         const auto nightSetup=[&](){
-            ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();
+            startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();
             for(int y=24;y<=34;++y)for(int x=24;x<=34;++x){auto& t=Scape[x][y];t.Objekt=-1;t.Typ=0;t.Art=0;t.Begehbar=t.Entdeckt=true;t.Phase=-1;}
             Guy.Pos={27,27};auto& t=Scape[27][27];Guy.PosScreen={short(t.xScreen+(EckKoor[0][0].x+EckKoor[0][2].x)/2),short(t.yScreen+(EckKoor[0][1].y+EckKoor[0][3].y)/2)};Guy.PosAlt=Guy.PosScreen;
             for(int item:{ROHAST,ROHSTEIN,ROHLIANE,ROHBLATT,ROHSTAMM})Guy.Inventar[item]=10;
@@ -202,7 +218,7 @@ bool Application::checkRevision()
             tile.Phase=0;bool advanced=false;for(int i=0;i<120&&!advanced;++i){++Bild;Math::Animationen();advanced=tile.Phase!=0;}require(advanced,"water animation scheduler is stopped");
         }
         // Dusk must not pause the clock or interrupt work; life-threatening alerts still do.
-        ModernUI::StartGame(true);PapierText=-1;Frage=-1;Interaction::StopSafely();
+        startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();
         Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
         Guy.Inventar[ROHAXT]=0;Guy.Inventar[ROHAST]=Guy.Inventar[ROHSTEIN]=10;
         Scape[Guy.Pos.x][Guy.Pos.y].Objekt=-1;BootsFahrt=false;Stunden=10;Minuten=0;
@@ -215,7 +231,7 @@ bool Application::checkRevision()
         require(ModernUI::OverlayActive()&&!Crafting::Busy(),"critical health no longer pauses and stops work");
 
         // Exercise the production mixer and decoded assets in the isolated runtime.
-        ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
+        startGameForCheck();PapierText=-1;Interaction::StopSafely();
         for(auto& column:Scape)for(auto& tile:column){tile.Entdeckt=true;tile.Objekt=-1;}
         Guy.Pos={20,20};Scape[21][20].Objekt=MEERWELLEN;Scape[20][21].Objekt=FLUSS1;Scape[19][20].Objekt=BAUM1;
         Sound::SetEnabled(true);Sound::SetMix(Sound::Music,55);Sound::SetMix(Sound::Ambience,68);Sound::SetMix(Sound::Effects,80);
@@ -251,8 +267,63 @@ bool Application::checkRevision()
         ModernUI::DrawStart();ModernUI::HandleClick(430,248);require(Soundzustand==1,"visible sound toggle did not reenable audio");
         ModernUI::DrawStart();ModernUI::HandleClick(600,548);ModernUI::DrawStart();ModernUI::HandleClick(150,350);
         require(Spielzustand==State::GAME&&!ModernUI::OverlayActive(),"sound settings return button did not restore the main menu controls");
+        // Explicit cache interaction, timed hammer audio, and fuel HUD in the real runtime.
+        startGameForCheck();PapierText=-1;Interaction::StopSafely();
+        std::stringstream cacheData(std::ios::in|std::ios::out|std::ios::binary);Expedition::Save(cacheData);cacheData.seekg(0);ExpeditionRules::Progress cacheProgress;
+        require(ExpeditionRules::read(cacheData,cacheProgress),"cache fixture could not read progress");
+        const auto cache=cacheProgress.caches[0];require(cache.x!=255,"island has no sealed cache");
+        Guy.Pos={cache.x,cache.y};auto& cacheTile=Scape[cache.x][cache.y];cacheTile.Entdeckt=true;
+        Guy.PosScreen={short(cacheTile.xScreen+27),short(cacheTile.yScreen+35)};Guy.PosAlt=Guy.PosScreen;
+        Camera={short(cacheTile.xScreen+27-480),short(cacheTile.yScreen+29-360)};World::Generate();Renderer::Zeige();
+        const auto chestScreen=SceneView::ToScreen(cacheTile.xScreen+27-Camera.x,cacheTile.yScreen+25-Camera.y);
+        Guy.Inventar[ROHHAMMER]=0;Expedition::Notify(L"");ModernUI::HandleClick(chestScreen.x,chestScreen.y);require(!Crafting::Busy()&&Expedition::CurrentNotice().empty(),"missing hammer did not use the small cache hint");
+        Renderer::Zeige();{const auto* p=lpDDSBack->pixels();std::ofstream out("cache-hint-preview.ppm",std::ios::binary);out<<"P6\n1280 720\n255\n";for(int i=0;i<1280*720;++i){const char rgb[]={char(p[4*i+2]),char(p[4*i+1]),char(p[4*i])};out.write(rgb,3);}}
+        Guy.Inventar[ROHHAMMER]=1;ModernUI::HandleClick(chestScreen.x,chestScreen.y);
+        require(Crafting::Job().product==Crafting::OpenCache&&Guy.Zustand==GUYSCHLAGEN,"clicking cache did not start hammering");
+        for(int i=0;i<3;++i){Crafting::Update(220000,true);Sound::Update(220000,true,false);}
+        require(Sound::IsPlaying(Sound::HAMMER),"hammer impact was not synchronized with the action");
+        Game::SaveGame();require(Game::LoadGame()&&Crafting::Job().product==Crafting::OpenCache,"hammer action did not survive loading");
+        finish();require(Expedition::CacheAt(cache.x,cache.y)<0,"hammer completion did not claim the cache");
+        auto& fuelTile=Scape[Guy.Pos.x][Guy.Pos.y];fuelTile.Objekt=FEUER;fuelTile.Timer=.6f;fuelTile.Entdeckt=true;fuelTile.Phase=0;
+        Guy.Inventar[ROHSTAMM]=2;Tag=3;ModernUI::DrawPanel();ModernUI::HandleClick(900,130);
+        require(Crafting::Job().product==Crafting::FeedFire&&Guy.Zustand==GUYBINDENUNTEN,"fuel HUD did not start adding wood");
+        for(int i=0;i<3;++i){Crafting::Update(230000,true);Sound::Update(230000,true,false);}
+        require(Sound::IsPlaying(Sound::HIT)&&Sound::CurrentVolume(Sound::FIRE)>0,"adding wood did not trigger wood and fire audio");
+        Renderer::Zeige();{const auto* pixels=lpDDSBack->pixels();std::ofstream preview("fuel-preview.ppm",std::ios::binary);preview<<"P6\n1280 720\n255\n";for(int i=0;i<1280*720;++i){const char rgb[]={char(pixels[4*i+2]),char(pixels[4*i+1]),char(pixels[4*i])};preview.write(rgb,3);}}
+        Game::SaveGame();require(Game::LoadGame()&&Crafting::Job().product==Crafting::FeedFire,"feeding action did not survive loading");
+        finish();require(Guy.Inventar[ROHSTAMM]==1&&std::abs(Scape[Guy.Pos.x][Guy.Pos.y].Timer-.3f)<.001f,"adding wood failed to consume once and refill fuel");
+        const auto firstFire=Campfires::All().front();const int fx=Guy.Pos.x+1,fy=Guy.Pos.y;
+        auto& extraFire=Scape[fx][fy];extraFire.Objekt=FEUER;extraFire.Entdeckt=extraFire.Begehbar=true;extraFire.Timer=.75f;extraFire.Phase=0;
+        extraFire.ObPos={short(Bmp[FEUER].rcDes.left),short(Bmp[FEUER].rcDes.top)};Campfires::Register(fx,fy);
+        const auto twoFires=Campfires::All();require(twoFires.size()==2&&twoFires[0].name!=twoFires[1].name,"two fires did not keep distinct names");
+        Game::SaveGame();require(Game::LoadGame()&&Campfires::All()[1].name==twoFires[1].name,"fire names changed when loading");
+        const float beforeFuel=Scape[firstFire.x][firstFire.y].Timer;const int beforeMinute=Minuten;
+        GameClock::Advance(100000,false);require(Scape[firstFire.x][firstFire.y].Timer==beforeFuel,"unfocused fire countdown consumed fuel");
+        for(int i=0;i<10;++i)Campfires::Advance(100000,true);
+        require(Scape[firstFire.x][firstFire.y].Timer>beforeFuel&&Minuten==beforeMinute,"fire burn incorrectly advanced the game clock");
+        Tag=5;ModernUI::DrawPanel();require(ModernUI::FirePanelHit(900,180),"weather did not stack both fire details");
+        const auto beforeZoom=PaceRules::zoomStep;ModernUI::HandleWheel(-1,900,180);require(PaceRules::zoomStep==beforeZoom,"fire list wheel changed map zoom");
+        Renderer::Zeige();{const auto* p=lpDDSBack->pixels();std::ofstream out("multiple-fires-preview.ppm",std::ios::binary);out<<"P6\n1280 720\n255\n";for(int i=0;i<1280*720;++i){const char rgb[]={char(p[4*i+2]),char(p[4*i+1]),char(p[4*i])};out.write(rgb,3);}}
+        Interaction::StopSafely();Guy.Inventar[ROHSTAMM]=2;ModernUI::DrawPanel();ModernUI::HandleClick(900,180);
+        require((RouteZiel.x==fx&&RouteZiel.y==fy)||Crafting::Job().product==Crafting::FeedFire,"second fire row did not target the second fire");
+        Crafting::Cancel(false);Interaction::StopSafely();Tag=1;
+        auto& staged=Scape[firstFire.x][firstFire.y];Camera={short(staged.xScreen-450),short(staged.yScreen-330)};
+        int lastHeight=10000;
+        for(float spent:{0.f,.21f,.41f,.61f,.81f}){staged.Timer=spent;const auto bounds=Campfires::Sprite(staged);require(bounds.h<lastHeight,"fire stages did not shrink");lastHeight=bounds.h;World::Generate();Renderer::Zeige();}
+        const auto smallBounds=Campfires::Sprite(staged);const auto& fireBitmap=Bmp[FEUER];bool clickedSmallFire=false;
+        for(int ly=0;ly<smallBounds.h&&!clickedSmallFire;++ly)for(int lx=0;lx<smallBounds.w;++lx)
+        {
+            const auto screen=SceneView::ToScreen(smallBounds.x+lx-Camera.x,smallBounds.y+ly-Camera.y);const auto scene=SceneView::ToScene(screen.x,screen.y);
+            const int dx=scene.x+Camera.x-smallBounds.x,dy=scene.y+Camera.y-smallBounds.y;
+            if(dx<0||dy<0||dx>=smallBounds.w||dy>=smallBounds.h)continue;
+            const int sx=fireBitmap.rcSrc.left+dx*fireBitmap.Breite/smallBounds.w,sy=fireBitmap.rcSrc.top+int(staged.Phase)*fireBitmap.Hoehe+dy*fireBitmap.Hoehe/smallBounds.h;
+            const auto* p=fireBitmap.Surface->pixels()+4*(sy*fireBitmap.Surface->width()+sx);if(p[0]==255&&p[1]==0&&p[2]==255)continue;
+            Guy.Pos={short(firstFire.x),short(firstFire.y)};Guy.Aktiv=false;Guy.Aktion=Action::NOTHING;
+            ModernUI::HandleClick(screen.x,screen.y);clickedSmallFire=Crafting::Job().product==Crafting::FeedFire;break;
+        }
+        require(clickedSmallFire,"smallest fire sprite did not accept a zoomed click");Crafting::Cancel(false);
         // Exercise the actual overnight transition, save, resume, music and skip.
-        ModernUI::StartGame(true);PapierText=-1;Interaction::StopSafely();
+        startGameForCheck();PapierText=-1;Interaction::StopSafely();
         BootsFahrt=false;Guy.Resource[GESUNDHEIT]=100;auto& nightTile=Scape[Guy.Pos.x][Guy.Pos.y];
         Tag=5;Stunden=11;nightTile.Art=2;nightTile.Objekt=-1;Guy.Inventar[ROHSTEIN]=9;Guy.Aktion=Action::SEARCH;Guy.AkNummer=10;Action::handler(Guy.Aktion);
         require(Guy.Inventar[ROHSTEIN]==10&&DayJournal::loot[DayJournal::Stone]==1,"search journal did not record the actual quantity received at the inventory limit");

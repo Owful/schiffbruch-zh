@@ -96,20 +96,6 @@ namespace World
         for (short y = 0; y < MAXYKACH; y++)
             for (short x = 0; x < MAXXKACH; x++)
             {
-                // Feuer nach einer bestimmten Zeit ausgehen lassen
-                if (Scape[x][y].Objekt == FEUER)
-                {
-                    Scape[x][y].Timer += float(elapsed * 0.0005 * ExpeditionRules::fireDecay(weather));
-                    if (Scape[x][y].Timer >= 1)
-                    {
-                        Scape[x][y].Objekt = -1;
-                        Scape[x][y].Timer = 0;
-                        Scape[x][y].ObPos.x = 0;
-                        Scape[x][y].ObPos.y = 0;
-                        Scape[x][y].Phase = -1;
-                        Chance -= 2 + 2 * Scape[x][y].Hoehe;
-                    }
-                }
                 if ((Scape[x][y].Phase == -1) ||
                     ((Scape[x][y].Objekt != FELD) &&
                         (Scape[x][y].Objekt != BUSCH)))
@@ -1593,6 +1579,11 @@ namespace World
         TwoClicks = -1;
     }
 
+    void IntroDiscovery()
+    {
+        for(auto& column:Scape)for(auto& tile:column)tile.Entdeckt=false;
+        Entdecken(false);Generate();
+    }
     void Entdecken(bool record)
     {
         bool changed=false;

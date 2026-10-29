@@ -16,26 +16,32 @@ namespace Crafting
         int pendingProduct=-1;std::uint32_t elapsed=0;
         void animate()
         {
+            if(pendingProduct==OpenCache)
+            {const auto& t=Scape[Guy.Pos.x][Guy.Pos.y];Guy.PosScreen={short(t.xScreen+41),short(t.yScreen+35)};}
+            else if(pendingProduct==FeedFire)
+            {const auto& t=Scape[Guy.Pos.x][Guy.Pos.y];Guy.PosScreen={short(t.xScreen+t.ObPos.x+Bmp[FEUER].Breite/2+14),short(t.yScreen+t.ObPos.y+Bmp[FEUER].Hoehe+2)};}
             Guy.Aktion=Action::CRAFT;Guy.Aktiv=true;Guy.AkNummer=0;
-            Guy.Zustand=pendingProduct==DrinkWater?GUYTRINKEN:pendingProduct==FillWater?GUYBINDENUNTEN:
+            Guy.Zustand=pendingProduct==OpenCache?GUYSCHLAGEN:pendingProduct==FeedFire?GUYBINDENUNTEN:pendingProduct==DrinkWater?GUYTRINKEN:pendingProduct==FillWater?GUYBINDENUNTEN:
                 (pendingProduct==ApplyBandage||pendingProduct==ROHANGEL||pendingProduct==Waterskin||pendingProduct==Bandage)?GUYBINDENOBEN:GUYSCHLAGEN;
             Bmp[BUTTSTOP].Phase=0;
         }
     }
     int DurationSeconds(int product){const auto* r=Find(product);return !r?0:r->category==1?3:r->minutes>0?5:4;}
-    bool IsSupplyAction(int product){return product==FillWater||product==DrinkWater||product==ApplyBandage;}
+    bool IsSupplyAction(int product){return product==FillWater||product==DrinkWater||product==ApplyBandage||product==OpenCache||product==FeedFire;}
     bool UsingSupply(){return Busy()&&IsSupplyAction(pendingProduct);}
     std::uint32_t DurationMicros(int product)
     {
-        switch(product){case DrinkWater:return 1200000;case FillWater:return 1600000;case ApplyBandage:return 1900000;default:return DurationSeconds(product)*1000000u;}
+        switch(product){case OpenCache:return 2400000;case FeedFire:return 1600000;case DrinkWater:return 1200000;case FillWater:return 1600000;case ApplyBandage:return 1900000;default:return DurationSeconds(product)*1000000u;}
     }
     bool Busy(){return pendingProduct>=0;}
     JobInfo Job(){return {pendingProduct,Busy()?float(elapsed)/DurationMicros(pendingProduct):0,Busy()?int((DurationMicros(pendingProduct)-elapsed+999999)/1000000):0};}
     void Cancel(bool notify)
     {
-        const bool active=Busy(),supply=UsingSupply();pendingProduct=-1;elapsed=0;
+        const bool active=Busy(),supply=UsingSupply(),positioned=pendingProduct==OpenCache||pendingProduct==FeedFire;
+        if(positioned&&Guy.Aktion==Action::CRAFT)Guy.PosAlt=Guy.PosScreen;
+        pendingProduct=-1;elapsed=0;
         if(Guy.Aktion==Action::CRAFT){Guy.Aktion=Action::NOTHING;Guy.Aktiv=false;Guy.AkNummer=0;Guy.Zustand=BootsFahrt?GUYBOOTLINKS:GUYLINKS;Bmp[BUTTSTOP].Phase=-1;}
-        if(active&&notify)Expedition::Notify(supply?L"已停止动作，水和绷带没有消耗。":L"已停止制作，材料没有扣除。");
+        if(active&&notify)Expedition::Notify(supply?L"已停止动作，物资没有消耗，箱子和篝火燃料保持原状。":L"已停止制作，材料没有扣除。");
     }
     void Reset(){Cancel(false);}
     void Save(std::ostream& out){const std::int32_t product=pendingProduct;out.write("CRF1",4);out.write(reinterpret_cast<const char*>(&product),4);out.write(reinterpret_cast<const char*>(&elapsed),4);}
@@ -66,7 +72,7 @@ namespace Crafting
     const Recipe* Find(int product){for(const auto& r:Recipes())if(r.product==product)return &r;return nullptr;}
     std::wstring Name(int item)
     {
-        switch(item){case FillWater:return L"装水";case DrinkWater:return L"喝水";case ApplyBandage:return L"包扎";default:break;}
+        switch(item){case OpenCache:return L"砸开漂流箱";case FeedFire:return L"给篝火添柴";case FillWater:return L"装水";case DrinkWater:return L"喝水";case ApplyBandage:return L"包扎";default:break;}
         if(const auto* r=Find(item))return r->name;
         switch(item){case ROHAST:return L"树枝";case ROHSTEIN:return L"石头";case ROHLIANE:return L"藤蔓";case ROHBLATT:return L"棕叶";case ROHSTAMM:return L"原木";default:return L"工具";}
     }
@@ -115,6 +121,7 @@ namespace Crafting
         {Expedition::Notify(L"请先完成当前动作并关闭提示，再使用补给。");return false;}
         if(Stunden>=12){Expedition::Notify(L"天黑了，先休息，明早再使用补给。");return false;}
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return false;}
+        if(product==OpenCache||product==FeedFire)Guy.PosAlt=Guy.PosScreen;
         pendingProduct=product;elapsed=0;animate();Bmp[Guy.Zustand].Phase=0;
         const auto message=L"正在"+Name(product)+L"……";Expedition::Notify(message.c_str());return true;
     }
@@ -127,7 +134,7 @@ namespace Crafting
         if(UsingSupply())
         {
             const int frames=Bmp[Guy.Zustand].Anzahl;
-            if(frames>0)Bmp[Guy.Zustand].Phase=short((elapsed/(pendingProduct==DrinkWater?240000u:220000u))%frames);
+            if(frames>0)Bmp[Guy.Zustand].Phase=pendingProduct==OpenCache?short((elapsed%800000u)*unsigned(frames)/800000u):short((elapsed/(pendingProduct==DrinkWater?240000u:220000u))%frames);
         }
         if(elapsed<DurationMicros(pendingProduct))return;
         const int product=pendingProduct;Cancel(false);

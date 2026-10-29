@@ -15,6 +15,7 @@ namespace World
     bool CheckFluss(short x, short y); // Für FLuss()
     void Baeume(short Prozent); // Verteilt die Bäume auf Insel
     void Entdecken(bool record=true); // Deckt die Kacheln neben der Spielfigur auf
+    void IntroDiscovery();
     void CheckBenutze(short Objekt); // Prüft ob die richtigen Rohstoffe benutzt wurden (im Inventar)
     bool CheckRohstoff(); // Prüft die Rohstoffe die zum Bau benötigt werden
     void MakeRohString(short x, short y, short Objekt); // Schreibt in den Rohstring die benötigten Rohstoffe

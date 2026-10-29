@@ -15,6 +15,7 @@ namespace World
     void AddResource(short kind,float amount){Guy.Resource[kind]=std::clamp(Guy.Resource[kind]+PaceRules::resourceChange(amount),0.f,100.f);}
 }
 namespace Renderer { void LimitScroll() {} }
+namespace NativeDisplay {sf::Vector2i MousePoint(){return {-1,-1};}}
 int main()
 {
     int failures=0;const auto check=[&](bool ok,const char* name){if(!ok){++failures;std::cerr<<"FAIL: "<<name<<'\n';}};
