@@ -17,6 +17,7 @@ add_executable(Schiffbruch WIN32
     src/GameClock.cpp
     src/Nightfall.cpp
     src/SceneView.cpp
+    src/MapView.cpp
     src/Localization.cpp
     src/Interaction.cpp
     src/Survival.cpp
@@ -70,7 +71,7 @@ if(MSVC)
 endif()
 
 if(BUILD_TESTING)
-    foreach(test_name expedition_rules pixel_format audio_rules day_journal)
+    foreach(test_name expedition_rules pixel_format audio_rules day_journal context_ui map_projection)
         add_executable(${test_name}_test tests/${test_name}_test.cpp)
         target_include_directories(${test_name}_test PRIVATE src)
         target_compile_features(${test_name}_test PRIVATE cxx_std_17)

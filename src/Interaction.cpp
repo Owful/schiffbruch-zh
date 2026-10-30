@@ -10,12 +10,16 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <queue>
+#include <array>
 
 namespace Interaction
 {
     namespace
     {
         ZWEID target{-1,-1};
+        Point selectedFire;
+        unsigned selectedFireId=0;
         short pending=Action::NOTHING;
         bool valid(int x,int y){return x>0&&y>0&&x<MAXXKACH-1&&y<MAXYKACH-1;}
         short actionAt(int x,int y,Intent intent)
@@ -24,6 +28,7 @@ namespace Interaction
             const auto& t=Scape[x][y];const int o=t.Objekt;
             if(intent==Intent::OpenCache)return Expedition::CacheAt(x,y)>=0?Action::OPEN_CACHE:Action::NOTHING;
             if(intent==Intent::FeedFire)return o==FEUER?Action::FEED_FIRE:Action::NOTHING;
+            if(intent==Intent::Hunt)return o>=BAUM1&&o<=BAUM4?Action::SLINGSHOT:Action::NOTHING;
             if(intent==Intent::ResumeBuild)
             {
                 if(o<FELD||o>FEUERSTELLE||t.Phase<Bmp[o].Anzahl)return Action::NOTHING;
@@ -44,6 +49,8 @@ namespace Interaction
             if(BootsFahrt){Expedition::Notify(L"请先靠岸，再收集岛上的食物与木材。");return true;}
             if(action==Action::OPEN_CACHE&&Guy.Inventar[ROHHAMMER]<1){Expedition::CacheHint(x,y);return true;}
             if(action==Action::FEED_FIRE&&Guy.Inventar[ROHSTAMM]<1&&Guy.Inventar[ROHAST]<2){Expedition::Notify(L"添柴需要原木 1，或树枝 2。请先收集木材。");return true;}
+            if(action==Action::FEED_FIRE&&Scape[x][y].Timer<=.02f){Expedition::Notify(L"篝火燃料充足，稍后再添柴吧。");return true;}
+            if(action==Action::SLINGSHOT&&Guy.Inventar[ROHSCHLEUDER]<1){Expedition::Notify(L"捕鸟需要投石索，可在“制作 → 工具”里准备。");return true;}
             if(action==Action::LOG&&Guy.Inventar[ROHAXT]==0){Expedition::Notify(L"砍树需要石斧。打开“制作”，用树枝 1 + 石头 1 制作。");return true;}
             if(action==Action::LOG&&Guy.Inventar[ROHSTAMM]>=10){Expedition::Notify(L"原木已满（10 / 10），先用来建造，再砍伐。");return true;}
             Cancel();
@@ -67,10 +74,32 @@ namespace Interaction
             }
             target={short(x),short(y)};pending=action;Guy.Aktiv=true;Guy.Aktion=Action::NOTHING;
             RoutePunkt=-1;Steps=0;Step=0;Bmp[BUTTSTOP].Phase=0;
-            Expedition::Notify(action==Action::OPEN_CACHE?L"正在走向漂流箱，抵达后用木石锤砸开。":action==Action::FEED_FIRE?L"正在走向篝火，抵达后添加木材。":action==Action::EAT?L"已锁定成熟果实，走近后自动进食。":action==Action::DRINK?L"已锁定水源，走近后自动饮水。":action==Action::LOG?L"已锁定树木，走近后自动砍伐。":L"已锁定未完成的建筑，走近后继续施工。");return true;
+            Expedition::Notify(action==Action::OPEN_CACHE?L"正在走向漂流箱，抵达后用木石锤砸开。":action==Action::FEED_FIRE?L"正在走向篝火，抵达后添加木材。":action==Action::SLINGSHOT?L"正在走向附近的树木，抵达后捕鸟。":action==Action::EAT?L"已锁定成熟果实，走近后自动进食。":action==Action::DRINK?L"已锁定水源，走近后自动饮水。":action==Action::LOG?L"已锁定树木，走近后自动砍伐。":L"已锁定未完成的建筑，走近后继续施工。");return true;
         }
     }
     void Cancel(){target={-1,-1};pending=Action::NOTHING;}
+    void ClearSelection(){selectedFire={};selectedFireId=0;}
+    void SelectFire(int x,int y)
+    {
+        if(actionAt(x,y,Intent::FeedFire)==Action::NOTHING)return;
+        Campfires::Sync();selectedFire={x,y};selectedFireId=Campfires::ids[Campfires::index(x,y)];
+    }
+    Point FireTarget()
+    {
+        if(BootsFahrt)return {};
+        if(selectedFire)
+        {
+            if(actionAt(selectedFire.x,selectedFire.y,Intent::FeedFire)!=Action::NOTHING&&Campfires::ids[Campfires::index(selectedFire.x,selectedFire.y)]==selectedFireId)return selectedFire;
+            ClearSelection();
+        }
+        Point closest;int distance=4;
+        for(int y=Guy.Pos.y-2;y<=Guy.Pos.y+2;++y)for(int x=Guy.Pos.x-2;x<=Guy.Pos.x+2;++x)
+        {
+            const int d=std::abs(x-Guy.Pos.x)+std::abs(y-Guy.Pos.y);
+            if(d<distance&&actionAt(x,y,Intent::FeedFire)!=Action::NOTHING){closest={x,y};distance=d;}
+        }
+        return closest;
+    }
     bool Target(int x,int y,Intent intent){const auto action=actionAt(x,y,intent);if(action==Action::NOTHING){Expedition::Notify(L"目标已改变，请重新选择。");return true;}return begin(x,y,action);}
     void StopSafely()
     {
@@ -84,6 +113,31 @@ namespace Interaction
     bool Request(Intent intent)
     {
         if(!valid(Guy.Pos.x,Guy.Pos.y))return false;
+        if(intent==Intent::Hunt)
+        {
+            if(Guy.Aktiv||Guy.Aktion!=Action::NOTHING){Expedition::Notify(L"正在行动，请先停止当前行动。");return true;}
+            if(BootsFahrt){Expedition::Notify(L"请先靠岸，再走近树木捕鸟。");return true;}
+            if(Guy.Inventar[ROHSCHLEUDER]<1){Expedition::Notify(L"捕鸟需要投石索，可在“制作 → 工具”里准备。");return true;}
+            // Search short, revealed, walkable routes; skip a blocked nearer tree.
+            struct Node{int x,y,steps;};std::queue<Node> open;
+            bool seen[MAXXKACH][MAXYKACH]{};open.push({Guy.Pos.x,Guy.Pos.y,0});seen[Guy.Pos.x][Guy.Pos.y]=true;
+            bool nearby=false;
+            for(int y=Guy.Pos.y-3;y<=Guy.Pos.y+3;++y)for(int x=Guy.Pos.x-3;x<=Guy.Pos.x+3;++x)
+                if(valid(x,y)&&Scape[x][y].Entdeckt&&std::abs(x-Guy.Pos.x)+std::abs(y-Guy.Pos.y)<=3&&Scape[x][y].Objekt>=BAUM1&&Scape[x][y].Objekt<=BAUM4)nearby=true;
+            while(!open.empty())
+            {
+                const auto n=open.front();open.pop();
+                if(actionAt(n.x,n.y,intent)==Action::SLINGSHOT)return begin(n.x,n.y,Action::SLINGSHOT);
+                if(n.steps>=6)continue;
+                for(const auto d:std::array<Point,4>{{{0,-1},{-1,0},{1,0},{0,1}}})
+                {
+                    const int x=n.x+d.x,y=n.y+d.y;
+                    if(!valid(x,y)||seen[x][y]||!Scape[x][y].Entdeckt||!Scape[x][y].Begehbar||std::abs(x-Guy.Pos.x)+std::abs(y-Guy.Pos.y)>3)continue;
+                    seen[x][y]=true;open.push({x,y,n.steps+1});
+                }
+            }
+            Expedition::Notify(nearby?L"附近的树暂时无法到达，先找一条通路再捕鸟。":L"附近没有适合捕鸟的树木，请再走近一些（3格内）。");return true;
+        }
         int best=std::numeric_limits<int>::max(),bx=-1,by=-1;short selected=Action::NOTHING;
         for(int y=Guy.Pos.y-1;y<=Guy.Pos.y+1;++y)for(int x=Guy.Pos.x-1;x<=Guy.Pos.x+1;++x)
         {
@@ -162,6 +216,7 @@ namespace Interaction
             if(immature){Expedition::Notify(L"这些果实还没有成熟，可以先走近，稍后再来采收。");return false;}
             return false;
         }
+        if(selected==Action::FEED_FIRE){SelectFire(bx,by);return true;}
         return begin(bx,by,selected);
     }
     void Update()
@@ -170,7 +225,7 @@ namespace Interaction
         if(Spielzustand!=State::GAME||BootsFahrt||Guy.Aktion!=Action::NOTHING){Cancel();return;}
         if(Guy.Aktiv)return;
         const auto action=pending;const auto pos=target;Cancel();
-        const auto intent=action==Action::OPEN_CACHE?Intent::OpenCache:action==Action::FEED_FIRE?Intent::FeedFire:action==Action::LOG?Intent::Chop:(action==Action::EAT||action==Action::DRINK)?Intent::FoodWater:Intent::ResumeBuild;
+        const auto intent=action==Action::OPEN_CACHE?Intent::OpenCache:action==Action::FEED_FIRE?Intent::FeedFire:action==Action::SLINGSHOT?Intent::Hunt:action==Action::LOG?Intent::Chop:(action==Action::EAT||action==Action::DRINK)?Intent::FoodWater:Intent::ResumeBuild;
         if(Guy.Pos.x!=pos.x||Guy.Pos.y!=pos.y||actionAt(pos.x,pos.y,intent)!=action)
         {Expedition::Notify(L"行动已取消：目标改变或路线中断。请重新选择目标。");return;}
         begin(pos.x,pos.y,action);

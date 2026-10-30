@@ -10,7 +10,7 @@
 #include "SceneView.hpp"
 #include "DayJournal.hpp"
 #include "Campfires.hpp"
-#include "NativeDisplay.hpp"
+#include "PointerHint.hpp"
 
 #include <algorithm>
 #include <array>
@@ -334,7 +334,7 @@ namespace Expedition
         }
         RestoreDC(dc,saved);lpDDSBack->ReleaseDC(dc);
     }
-    void DrawHud()
+    void DrawHud(int mouseX,int mouseY)
     {
         if(Nacht||!lpDDSBack)return;
         HDC dc=nullptr;if(FAILED(lpDDSBack->GetDC(&dc)))return;
@@ -344,13 +344,15 @@ namespace Expedition
             const auto& cache=progress.caches[i];if((progress.claimed&(1u<<i))||!positionValid(cache.x,cache.y))continue;
             const auto& tile=Scape[cache.x][cache.y];if(!tile.Entdeckt)continue;
             const int x=tile.xScreen+27-Camera.x,y=tile.yScreen+29-Camera.y;
-            const auto mouse=NativeDisplay::MousePoint();const auto scene=SceneView::ToScene(mouse.x,mouse.y);
+            const SceneView::Point mouse{mouseX,mouseY};const auto scene=SceneView::ToScene(mouse.x,mouse.y);
             const bool hovered=mouse.x>=0&&mouse.x<960&&mouse.y>=64&&mouse.y<656&&std::abs(scene.x-x)<16&&std::abs(scene.y-y)<18;
             if(!hovered&&!(cacheHintX==cache.x&&cacheHintY==cache.y&&GetTickCount64()<cacheHintUntil))continue;
-            const auto screen=SceneView::ToScreen(x,y);
-            if(screen.x<0||screen.x>=960||screen.y<64||screen.y>=656)continue;
-            const int hx=std::clamp(screen.x-53,8,846),hy=std::clamp(screen.y-35,68,625);
-            panel(dc,hx,hy,106,22);text(dc,hx+8,hy+3,Guy.Inventar[ROHHAMMER]>0?L"点击锤开箱子":L"需木石锤",Gold,1);
+            if(mouse.x<0||mouse.x>=960||mouse.y<64||mouse.y>=656)continue;
+            const bool hammer=Guy.Inventar[ROHHAMMER]>0;
+            const auto hint=PointerHint::Place(mouse.x,mouse.y,hammer?86:62,20);
+            fill(dc,hint.x,hint.y,hint.w,hint.h,Ink);
+            text(dc,hint.x+4,hint.y+2,hammer?L"点击锤开箱子":L"需木石锤",Gold,1);
+            break;
         }
         if(GetTickCount64()<noticeUntil&&!notice.empty())
         {

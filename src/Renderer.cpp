@@ -382,7 +382,7 @@ namespace Renderer
             Fade(100, 100, 100);
         }
 
-        Expedition::DrawHud();
+        {const auto mouse=NativeDisplay::MousePoint();Expedition::DrawHud(mouse.x,mouse.y);}
         ModernUI::DrawNightJournal();
         ModernUI::DrawOverlay();
         // Flippen

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "ContextBar.hpp"
 namespace ModernUI
 {
     void Layout();
@@ -20,4 +21,5 @@ namespace ModernUI
     void Interact();
     void CheckSafety();
     bool DuskNoticeVisible();
+    const ContextBar::State& BottomState();
 }

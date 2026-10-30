@@ -22,6 +22,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         else if(command=="--revision-check"){if(!app.checkRevision())return 2;}
         else{if(command=="--preview-workshop")app.prepareWorkshopPreview();else if(command=="--preview-rain"||command=="--preview-danger")app.prepareExperiencePreview(command=="--preview-danger");app.run();}
     }
-    catch(const std::exception&) { MessageBoxW(nullptr,L"游戏启动失败。请将完整游戏包解压后，再运行开始游戏。",L"漂流之境",MB_OK|MB_ICONERROR); return 1; }
+    catch(const std::exception&) { MessageBoxW(nullptr,L"游戏启动失败。请将完整游戏包解压后，再运行开始游戏。",L"余岸 Stillshore",MB_OK|MB_ICONERROR); return 1; }
     return 0;
 }

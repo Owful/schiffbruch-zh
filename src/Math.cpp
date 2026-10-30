@@ -11,6 +11,8 @@
 #include "Sound.hpp"
 #include "State.hpp"
 #include "World.hpp"
+#include "Interaction.hpp"
+#include "MapView.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -129,13 +131,7 @@ namespace Math
         // wenn die Maus in der Minimap ist ->
         if ((InRect(MousePosition.x, MousePosition.y, rcKarte)) && (Button == 0) && (Push != -1))
         {
-            // Mauskoordinaten in Minimap
-            short mx = MousePosition.x - static_cast<short>(rcKarte.left);
-            short my = MousePosition.y - static_cast<short>(rcKarte.top);
-            Camera.x = ((KXPIXEL / 4) * (mx - my) + MAXXKACH * KXPIXEL / 2)
-                - static_cast<short>((rcSpielflaeche.right - rcSpielflaeche.left) / 2);
-            Camera.y = ((KXPIXEL / 7) * (my + mx))
-                - static_cast<short>((rcSpielflaeche.bottom - rcSpielflaeche.top) / 2);
+            MapView::Focus(MousePosition.x,MousePosition.y,MapView::MiniFrame());
         }
         else if (InRect(MousePosition.x, MousePosition.y, Bmp[BUTTGITTER].rcDes))
         {
@@ -472,17 +468,7 @@ namespace Math
             {
                 PlaySound(Sound::CLICK2, 100);
                 Guy.AkNummer = 0;
-                if ((Scape[Guy.Pos.x][Guy.Pos.y].Objekt >= BAUM1) &&
-                    (Scape[Guy.Pos.x][Guy.Pos.y].Objekt <= BAUM4))
-                {
-                    Guy.AkNummer = 0;
-                    Guy.Aktion = Action::SLINGSHOT;
-                }
-                else if ((Scape[Guy.Pos.x][Guy.Pos.y].Objekt == BAUMGROSS) ||
-                    ((Scape[Guy.Pos.x][Guy.Pos.y].Objekt >= HAUS1) &&
-                        (Scape[Guy.Pos.x][Guy.Pos.y].Objekt <= HAUS3)))
-                    PapierText = Renderer::DrawText(BAUMZUGROSS, TXTPAPIER, 1);
-                else PapierText = Renderer::DrawText(KEINVOGEL, TXTPAPIER, 1);
+                Interaction::Request(Interaction::Intent::Hunt);
             }
         }
         else if ((InRect(MousePosition.x, MousePosition.y, Bmp[BUTTSCHATZKARTE].rcDes)) &&
@@ -1027,12 +1013,9 @@ namespace Math
         for (short y = 0; y < MAXYKACH; y++)
             for (short x = 0; x < MAXXKACH; x++)
             {
-                Scape[x][y].xScreen = KXPIXEL / 2 * MAXXKACH + 32 +
-                    x * KXPIXEL / 2 - y * KYPIXEL / 2 +
-                    (-6 * y) + x; // seltsame Korrekturen
-                Scape[x][y].yScreen =
-                    x * KXPIXEL / 2 + y * KYPIXEL / 2 - 16 * Scape[x][y].Hoehe +
-                    (-13 * x) + (-8 * y); // seltsame Korrekturen
+                const auto projected=MapProjection::TileOrigin(x,y,Scape[x][y].Hoehe);
+                Scape[x][y].xScreen=short(projected.x);
+                Scape[x][y].yScreen=short(projected.y);
 
                 if ((x == 0) && (y == 0))
                     ScapeGrenze.top = Scape[x][y].yScreen;

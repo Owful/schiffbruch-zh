@@ -22,6 +22,8 @@
 #include "DuskNotice.hpp"
 #include "DayJournal.hpp"
 #include "Campfires.hpp"
+#include "ContextBar.hpp"
+#include "MapView.hpp"
 #include "State.hpp"
 #include <SFML/Window.hpp>
 #include <array>
@@ -38,12 +40,15 @@ namespace ModernUI
         struct Button{RECT rect;std::wstring label;std::function<void()> click;bool enabled=true;std::wstring hint;};
         std::vector<Button> buttons;
         std::size_t overlayStart=0;
-        bool paused=false,settings=false,craft=false,journal=false,quit=false,confirmNew=false;
+        bool paused=false,settings=false,craft=false,journal=false,quit=false,confirmNew=false,mapOpen=false;
         int safety=0;
         DuskNotice::State duskNotice;
         int selection=-1;
         std::vector<Campfires::Info> fireList;
-        bool fireDetails=false;int fireOffset=0;RECT fireArea{632,70,948,112};
+        bool fireDetails=false;int fireOffset=0;RECT fireArea{972,70,1268,143};
+        ContextBar::State contextBar;
+        sf::Clock contextClock;
+        unsigned contextFireId=0;
         int craftCategory=0,craftOffset=0;
         HDC active=nullptr;
         std::array<HFONT,4> fonts{};
@@ -82,6 +87,7 @@ namespace ModernUI
             if(const int missing=Crafting::MissingForAction(id);missing>=0){showRecipe(missing);const auto why=Crafting::Requirement(id);Expedition::Notify(why.c_str());return;}
             if(id==BUTTESSEN){Interaction::Request(Interaction::Intent::FoodWater);return;}
             if(id==BUTTFAELLEN){Interaction::Request(Interaction::Intent::Chop);return;}
+            if(id==BUTTSCHLEUDER){Interaction::Request(Interaction::Intent::Hunt);return;}
             if(Guy.Aktiv&&id!=BUTTSTOP){Expedition::Notify(L"正在行动中。可以先点击“停止”，再选择新的行动。");return;}
             if(Bmp[id].Phase==-1){Expedition::Notify(L"尚未解锁。打开“制作”准备所需工具，或探索沉船获得新物品。");return;}
             const auto old=MousePosition;
@@ -129,13 +135,14 @@ namespace ModernUI
         void top()
         {
             fill(0,0,MAXX,64,BG);line(0,63,MAXX);
-            txt(24,17,L"漂流之境",25,GOLD);txt(164,25,L"荒岛生存",13,MUTED);
+            txt(24,17,L"余岸",25,GOLD);txt(84,25,L"Stillshore",13,MUTED);
+            button(164,13,112,38,L"地图  M",[]{if(Spielzustand==State::GAME&&PapierText==-1&&!Nacht&&!DayJournal::Active())mapOpen=true;});
             const wchar_t* names[]={L"水分",L"饱食",L"生命"};
             const COLORREF colors[]={Guy.Resource[0]<50?RGB(224,126,98):RGB(115,172,185),Guy.Resource[1]<50?RGB(224,126,98):RGB(194,177,116),Guy.Resource[2]<=35?RGB(235,103,91):GREEN};
             for(int i=0;i<3;++i){const int x=300+i*112;txt(x,13,names[i],13,MUTED);txt(x+64,13,std::to_wstring(int(Guy.Resource[i])),13,FG);fill(x,39,88,4,LINE);fill(x,39,int(88*std::clamp(Guy.Resource[i],0.f,100.f)/100),4,colors[i]);}
             if(!fireList.empty())
             {
-                button(646,10,124,42,L"篝火 · "+std::to_wstring(fireList.size()),[]{});
+                txt(658,24,L"篝火 · "+std::to_wstring(fireList.size()),16,GOLD);
             }
             const auto w=ExpeditionRules::weather(Tag);const wchar_t* weather=w==ExpeditionRules::Weather::Clear?L"晴朗":w==ExpeditionRules::Weather::Rain?L"阵雨":L"风暴";
             wchar_t clock[64]{};std::swprintf(clock,64,L"第 %d 天  %02d:%02d  ·  %ls",Tag,Stunden+6,Minuten,weather);txt(790,24,clock,16,GOLD);
@@ -146,27 +153,29 @@ namespace ModernUI
         {
             const bool wasOpen=fireDetails;fireDetails=false;if(fireList.empty()||PapierText!=-1||Nacht)return;
             const auto mouse=NativeDisplay::MousePoint();
-            const int rows=std::min(8,int(fireList.size()));fireArea={632,70,948,112+rows*50+22};
+            const int rows=std::min(3,int(fireList.size()));
             bool show=Campfires::Affected()||inside(mouse.x,mouse.y,RECT{646,10,770,64})||(wasOpen&&inside(mouse.x,mouse.y,fireArea));
             int hover=-1;
-            if(mouse.x>=0&&mouse.x<960&&mouse.y>=64&&mouse.y<656&&!(wasOpen&&inside(mouse.x,mouse.y,fireArea)))
+            if(mouse.x>=0&&mouse.x<960&&mouse.y>=64&&mouse.y<656)
             {
                 const auto scene=SceneView::ToScene(mouse.x,mouse.y);
                 for(int i=0;i<int(fireList.size());++i){const auto& f=fireList[i];const auto b=Campfires::Sprite(Scape[f.x][f.y]);if(scene.x+Camera.x>=b.x&&scene.x+Camera.x<b.x+b.w&&scene.y+Camera.y>=b.y&&scene.y+Camera.y<b.y+b.h){show=true;hover=i;break;}}
             }
             if(!show)return;
-            if(hover>=0)fireOffset=(hover/8)*8;
+            if(hover>=0)fireOffset=(hover/3)*3;
             fireOffset=std::clamp(fireOffset,0,std::max(0,int(fireList.size())-rows));fireDetails=true;
-            fill(fireArea.left,fireArea.top,316,fireArea.bottom-fireArea.top,BG);fill(632,70,316,2,GOLD);
-            txt(645,81,Campfires::Affected()?L"风雨正在影响篝火":L"篝火 · 剩余现实时间",16,GOLD);
+            fill(fireArea.left,fireArea.top,296,73,BG);
+            const auto effect=ExpeditionRules::weather(Tag)==ExpeditionRules::Weather::Storm?L"暴雨 / 强风 · 燃烧加快":ExpeditionRules::weather(Tag)==ExpeditionRules::Weather::Rain?L"阵雨 / 风 · 燃烧加快":L"篝火 · 现实分:秒";
+            txt(980,72,effect,13,GOLD);
+            if(fireList.size()>3)txt(1194,72,L"↕ "+std::to_wstring(fireOffset+1)+L"/"+std::to_wstring(fireList.size()),13,MUTED);
+            const auto selected=Interaction::FireTarget();
             for(int row=0;row<rows&&fireOffset+row<int(fireList.size());++row)
             {
-                const auto f=fireList[fireOffset+row];const int y=112+row*50;fill(640,y,300,46,CARD);
-                txt(650,y+4,f.name,13,FG);txt(797,y+4,Campfires::Countdown(f.seconds),13,GOLD);
-                txt(650,y+25,Campfires::Effect(),13,MUTED);
-                button(868,y+8,64,29,L"添柴",[f]{Interaction::Target(f.x,f.y,Interaction::Intent::FeedFire);});
+                const auto& f=fireList[fireOffset+row];const int y=91+row*17;
+                const bool chosen=selected&&selected.x==f.x&&selected.y==f.y;
+                txt(980,y,(chosen?L"› ":L"  ")+f.name,13,chosen?GOLD:FG);
+                txt(1210,y,Campfires::Countdown(f.seconds),13,hover==fireOffset+row?GOLD:MUTED);
             }
-            txt(645,fireArea.bottom-18,fireList.size()>8?L"滚轮翻看 · "+std::to_wstring(fireOffset+1)+L"–"+std::to_wstring(std::min(fireOffset+rows,int(fireList.size())))+L" / "+std::to_wstring(fireList.size()):L"现实分:秒 · 暂停与失焦时停计",13,MUTED);
         }
         void sidebar()
         {
@@ -231,17 +240,71 @@ namespace ModernUI
             }
             line(980,666,284);button(980,681,136,28,L"生存手记",[]{journal=true;});button(1128,681,136,28,L"声音设置",[]{paused=true;settings=true;});
         }
-        void bottom()
+        std::array<bool,ContextBar::Count> bottomAvailable()
         {
             const auto supplies=Expedition::GetInfo();
+            const bool idle=!Guy.Aktiv&&Guy.Aktion==Action::NOTHING&&!Crafting::Busy()&&!Nightfall::Pending()&&!Nacht;
+            const auto& tile=Scape[Guy.Pos.x][Guy.Pos.y];
+            const auto fire=Interaction::FireTarget();
+            bool canBoat=tile.Objekt==BOOT&&tile.Phase<Bmp[BOOT].Anzahl;
+            if(BootsFahrt)for(const auto offset:std::array<Interaction::Point,4>{{{0,-1},{-1,0},{1,0},{0,1}}})
+            {
+                const int x=Guy.Pos.x+offset.x,y=Guy.Pos.y+offset.y;
+                if(x>=0&&y>=0&&x<MAXXKACH&&y<MAXYKACH&&Scape[x][y].Art!=1&&Scape[x][y].Objekt==-1)canBoat=true;
+            }
+            return {{idle&&!BootsFahrt,
+                (Crafting::Busy()||Guy.Aktiv||Guy.Aktion!=Action::NOTHING)&&!Nacht&&Guy.Aktion!=Action::DAY_END&&Guy.Aktion!=Action::DEATH,
+                idle&&Construction::Unfinished(tile)&&Construction::Missing(tile).empty(),
+                idle&&supplies.waterskin&&((Expedition::NearFreshwater()&&supplies.water<3)||(supplies.water>0&&Guy.Resource[WASSER]<=85)),
+                idle&&supplies.bandages>0&&Guy.Resource[GESUNDHEIT]<=85,
+                idle&&canBoat,
+                idle&&fire&&Scape[fire.x][fire.y].Timer>.02f&&(Guy.Inventar[ROHSTAMM]>0||Guy.Inventar[ROHAST]>=2)}};
+        }
+        void bottom()
+        {
+            const auto supplies=Expedition::GetInfo();const auto fire=Interaction::FireTarget();
+            const unsigned fireId=fire?Campfires::ids[Campfires::index(fire.x,fire.y)]:0;
+            if(fireId!=contextFireId){contextBar.slots[ContextBar::Feed]={};contextFireId=fireId;}
+            const auto wanted=bottomAvailable();contextBar.update(wanted,contextClock.restart().asSeconds());
             fill(0,656,960,64,BG);line(0,656,960);
-            button(18,668,136,38,L"互动  E",[]{Interact();});
-            actionButton(BUTTSTOP,Crafting::UsingSupply()?L"停止动作":Crafting::Busy()?L"停止制作":L"停止行动",168,668,128,38);
-            actionButton(BUTTWEITER,L"继续建造",310,668,128,38);
-            const auto waterLabel=!supplies.waterskin?L"制作水壶":std::wstring(Expedition::NearFreshwater()&&supplies.water<3?L"装水 K · ":L"喝水 K · ")+std::to_wstring(supplies.water)+L"/3";
-            button(452,668,128,38,waterLabel,[owned=supplies.waterskin]{if(owned)Expedition::UseWaterskin();else showRecipe(Crafting::Waterskin);});
-            button(594,668,128,38,L"绷带 J · "+std::to_wstring(supplies.bandages),[]{Expedition::UseBandage();});
-            actionButton(BUTTABLEGEN,L"上船 / 靠岸",736,668,150,38);
+            for(int id:{BUTTSTOP,BUTTWEITER,BUTTABLEGEN})place(id,-2000,-2000);
+            const std::array<std::wstring,ContextBar::Count> labels{{L"互动  E",Crafting::UsingSupply()?L"停止动作":Crafting::Busy()?L"停止制作":L"停止行动",L"继续建造",
+                std::wstring(Expedition::NearFreshwater()&&supplies.water<3?L"装水 K · ":L"喝水 K · ")+std::to_wstring(supplies.water)+L"/3",
+                L"绷带 J · "+std::to_wstring(supplies.bandages),BootsFahrt?L"靠岸":L"上船",L"添柴 · "+std::to_wstring(fireId)+L"号"}};
+            const auto mouse=NativeDisplay::MousePoint();
+            for(int i=0;i<ContextBar::Count;++i)
+            {
+                const auto& slot=contextBar.slots[i];if(slot.alpha<=0)continue;
+                const int x=int(std::lround(slot.x));const bool enabled=contextBar.clickable(i);RECT rect{x,668,x+ContextBar::State::Width,706};
+                const bool hover=enabled&&inside(mouse.x,mouse.y,rect);
+                const auto fade=[&](COLORREF color){return RGB(int(GetRValue(BG)+(int(GetRValue(color))-GetRValue(BG))*slot.alpha),int(GetGValue(BG)+(int(GetGValue(color))-GetGValue(BG))*slot.alpha),int(GetBValue(BG)+(int(GetBValue(color))-GetBValue(BG))*slot.alpha));};
+                fill(x,668,ContextBar::State::Width,38,fade(hover?RGB(48,69,66):CARD));
+                if(hover)fill(x,668,2,38,GOLD);
+                txt(x+12,677,labels[i],16,fade(hover?GOLD:FG));
+                if(enabled)
+                {
+                    if(i==ContextBar::Stop)place(BUTTSTOP,x,668,ContextBar::State::Width,38);
+                    if(i==ContextBar::Continue)place(BUTTWEITER,x,668,ContextBar::State::Width,38);
+                    if(i==ContextBar::Boat)place(BUTTABLEGEN,x,668,ContextBar::State::Width,38);
+                }
+                buttons.push_back({rect,labels[i],[i,enabled,fire,fireId]{
+                    if(!enabled||!bottomAvailable()[i])return;
+                    switch(i)
+                    {
+                    case ContextBar::Interact:Interact();break;
+                    case ContextBar::Stop:if(Crafting::Busy())Crafting::Cancel();else Interaction::StopSafely();break;
+                    case ContextBar::Continue:Interaction::Target(Guy.Pos.x,Guy.Pos.y,Interaction::Intent::ResumeBuild);break;
+                    case ContextBar::Water:Expedition::UseWaterskin();break;
+                    case ContextBar::Bandage:Expedition::UseBandage();break;
+                    case ContextBar::Boat:Guy.AkNummer=0;Guy.Aktion=BootsFahrt?Action::DOCK:Action::UNDOCK;break;
+                    case ContextBar::Feed:
+                        // A stale click must never redirect to a replaced fire.
+                        {const auto current=Interaction::FireTarget();
+                        if(fire&&current.x==fire.x&&current.y==fire.y&&Scape[fire.x][fire.y].Objekt==FEUER&&Campfires::ids[Campfires::index(fire.x,fire.y)]==fireId)Interaction::Target(fire.x,fire.y,Interaction::Intent::FeedFire);}
+                        break;
+                    }
+                },enabled,{}});
+            }
         }
         void modalPanel(const wchar_t* title)
         {
@@ -268,9 +331,8 @@ namespace ModernUI
     void DrawPanel()
     {
         Layout();buttons.clear();overlayStart=0;fireList=Campfires::All();
-        RECT source{0,0,120,120};lpDDSBack->Blt(&rcKarte,lpDDSKarte,&source,0,nullptr);
+        MapView::DrawMini();
         begin(lpDDSBack);top();sidebar();bottom();
-        fill(812+Guy.Pos.x*2,84+Guy.Pos.y*2,3,3,GOLD);
         const auto info=Expedition::GetInfo();
         txt(24,82,L"已探索 "+std::to_wstring(info.explored)+L"% · 救援进度 "+std::to_wstring(info.signal)+L"%",13,GOLD);
         txt(24,106,L"单击地面移动 · 右键拖动视角 · E 就近互动",13,MUTED);
@@ -302,7 +364,8 @@ namespace ModernUI
         firePanel();end();
     }
     bool FirePanelHit(int x,int y){return fireDetails&&inside(x,y,fireArea);}
-    bool OverlayActive(){return safety||paused||journal||confirmNew||Spielzustand==State::LOGO||Spielzustand==State::OUTRO;}
+    const ContextBar::State& BottomState(){return contextBar;}
+    bool OverlayActive(){return safety||paused||journal||confirmNew||mapOpen||Spielzustand==State::LOGO||Spielzustand==State::OUTRO;}
     bool DuskNoticeVisible(){return duskNotice.visible(GetTickCount64());}
     void CheckSafety()
     {
@@ -317,7 +380,7 @@ namespace ModernUI
     bool ShouldQuit(){return quit;}
     void StartGame(bool fresh)
     {
-        paused=false;settings=false;journal=false;craft=false;safety=0;fireDetails=false;fireOffset=0;duskNotice.reset();Survival::Reset();Interaction::Cancel();NativeDisplay::SetFade(1,1,1);
+        paused=false;settings=false;journal=false;craft=false;safety=0;mapOpen=false;fireDetails=false;fireOffset=0;contextBar.reset();contextClock.restart();contextFireId=0;duskNotice.reset();Survival::Reset();Interaction::Cancel();Interaction::ClearSelection();NativeDisplay::SetFade(1,1,1);
         Game::NeuesSpiel(fresh);
         LAnimation=true;for(int i=MEERWELLEN;i<=SCHLEUSE6;++i)Bmp[i].Animation=true;World::Generate();
         Crafting::SyncUnlocks();
@@ -331,7 +394,7 @@ namespace ModernUI
         buttons.clear();overlayStart=0;NativeDisplay::SetFade(1,1,1);begin(lpDDSBack);
         for(int y=0;y<720;++y)fill(0,y,1280,1,RGB(15+y/75,35+y/42,42+y/40));
         for(int i=0;i<18;++i)fill(550+i*18,470-i*7,590-i*22,2,RGB(54,87,79));
-        txt(98,118,L"漂流之境",46,GOLD);txt(100,193,L"一座岛。一段归途。",25);txt(100,242,L"探索荒岛，建立营地，等待归来的船。",16,MUTED);
+        txt(98,118,L"余岸",46,GOLD);txt(212,141,L"Stillshore",25,GOLD);txt(100,193,L"在荒岛上，重新拾起生活。",25);txt(100,242,L"探索荒岛，建立营地，等待归来的船。",16,MUTED);
         const bool saved=std::filesystem::exists("save.dat");
         button(100,330,284,50,L"继续旅程",[]{StartGame(false);},saved);
         button(100,394,284,50,L"新的旅程",[]{if(std::filesystem::exists("save.dat"))confirmNew=true;else StartGame(true);});
@@ -388,8 +451,16 @@ namespace ModernUI
     }
     void DrawOverlay()
     {
-        if(!paused&&!journal&&!confirmNew&&!safety)return;
+        if(!paused&&!journal&&!confirmNew&&!safety&&!mapOpen)return;
         overlayStart=buttons.size();
+        if(mapOpen&&!safety)
+        {
+            begin(lpDDSBack);fill(0,64,1280,656,RGB(10,24,28));fill(104,80,1072,592,BG);fill(104,80,1072,2,GOLD);
+            txt(134,98,L"岛屿地图",25,GOLD);txt(134,137,L"等距斜视 · 点击已探索地块，将镜头移到那里",13,MUTED);
+            button(1008,102,136,36,L"返回岛屿  M",[]{mapOpen=false;Direct::Reset();});
+            MapView::DrawOverview();
+            txt(134,650,L"金色圆点：你的位置    浅色方框：当前视野    暗处：尚未探索",13,MUTED);end();return;
+        }
         begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程");
         if(safety)
         {
@@ -446,6 +517,12 @@ namespace ModernUI
     }
     bool HandleClick(int x,int y)
     {
+        if(mapOpen&&!safety)
+        {
+            if(inside(x,y,RECT{1008,102,1144,138})){mapOpen=false;Direct::Reset();}
+            else if(inside(x,y,RECT{134,172,1146,640})&&MapView::Focus(x,y,MapView::OverviewFrame())){mapOpen=false;Direct::Reset();}
+            return true;
+        }
         if(DayJournal::Active()&&!OverlayActive()){if(inside(x,y,RECT{775,575,1140,620}))DayJournal::Skip();return true;}
         if(Spielzustand!=State::LOGO&&PapierText!=-1&&!paused&&!journal&&!safety)
         {
@@ -454,7 +531,7 @@ namespace ModernUI
         }
         if(Spielzustand==State::GAME&&!OverlayActive()&&!FirePanelHit(x,y)&&inside(x,y,rcKarte))
         {
-            const auto old=MousePosition;MousePosition={short(x),short(y)};Math::MouseInPanel(0,0);MousePosition=old;return true;
+            MapView::Focus(x,y,MapView::MiniFrame());return true;
         }
         const std::size_t first=OverlayActive()?overlayStart:0;
         for(std::size_t n=buttons.size();n>first;--n)
@@ -471,7 +548,7 @@ namespace ModernUI
     bool HandleWheel(float delta,int x,int y)
     {
         if(OverlayActive()||PapierText!=-1)return true;
-        if(FirePanelHit(x,y)){fireOffset=std::clamp(fireOffset+(delta<0?1:delta>0?-1:0),0,std::max(0,int(fireList.size())-8));return true;}
+        if(FirePanelHit(x,y)){fireOffset=std::clamp(fireOffset+(delta<0?1:delta>0?-1:0),0,std::max(0,int(fireList.size())-3));return true;}
         if(craft&&x>=960&&y>=196&&y<666){const int count=int(craftRows().size());craftOffset=std::clamp(craftOffset+(delta<0?1:delta>0?-1:0),0,std::max(0,count-4));return true;}
         if(Spielzustand==State::GAME&&x>=0&&x<960&&y>=64&&y<656){SceneView::Zoom(delta,x,y);Direct::Reset();return true;}return false;
     }
@@ -479,10 +556,12 @@ namespace ModernUI
     {
         if(safety)return true;
         if(DayJournal::Active()&&key==sf::Keyboard::Return&&!OverlayActive()){DayJournal::Skip();return true;}
-        if(key==sf::Keyboard::Escape){if(confirmNew){confirmNew=false;return true;}if(PapierText!=-1){closePaper(false);return true;}if(journal)journal=false;else{paused=!paused;settings=false;}return true;}
+        if(key==sf::Keyboard::Escape){if(mapOpen){mapOpen=false;Direct::Reset();return true;}if(confirmNew){confirmNew=false;return true;}if(PapierText!=-1){closePaper(false);return true;}if(journal)journal=false;else{paused=!paused;settings=false;}return true;}
         if(Spielzustand!=State::LOGO&&key==sf::Keyboard::Return&&PapierText!=-1){closePaper(true);return true;}
         if(Spielzustand==State::LOGO&&key==sf::Keyboard::Return){StartGame(!std::filesystem::exists("save.dat"));return true;}
         if(Spielzustand!=State::GAME)return false;
+        if(mapOpen){if(key==sf::Keyboard::M){mapOpen=false;Direct::Reset();}return true;}
+        if(key==sf::Keyboard::M&&!OverlayActive()&&PapierText==-1&&!Nacht&&!DayJournal::Active()){mapOpen=true;return true;}
         if(key==sf::Keyboard::F1){journal=!journal;return true;}
         if(OverlayActive())return true;
         if(key==sf::Keyboard::E){Interact();return true;}
@@ -498,7 +577,7 @@ namespace ModernUI
         const auto& t=Scape[Guy.Pos.x][Guy.Pos.y];const int old=HauptMenue;HauptMenue=Menu::ACTION;
         if(Interaction::Request(Interaction::Intent::Any)){HauptMenue=old;return;}
         if((t.Objekt>=FLUSS1&&t.Objekt<=SCHLEUSE6)||(t.Objekt==ROHR&&t.Phase==1)||((t.Objekt==BUSCH||t.Objekt==FELD)&&t.Phase==Bmp[t.Objekt].Anzahl-1))legacy(BUTTESSEN);
-        else if(t.Objekt==FEUER)Interaction::Target(Guy.Pos.x,Guy.Pos.y,Interaction::Intent::FeedFire);
+        else if(t.Objekt==FEUER)Interaction::SelectFire(Guy.Pos.x,Guy.Pos.y);
         else if(t.Objekt==FEUERSTELLE)legacy(BUTTANZUENDEN);
         else if(t.Objekt==ZELT||t.Objekt==HAUS3)legacy(BUTTSCHLAFEN);
         else legacy(BUTTSUCHEN);

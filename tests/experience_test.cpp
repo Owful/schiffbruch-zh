@@ -5,6 +5,7 @@
 #include "Action.hpp"
 #include "State.hpp"
 #include "WeatherEffects.hpp"
+#include "Campfires.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -28,7 +29,7 @@ namespace
         for(auto& column:Scape)for(auto& t:column){t={};t.Objekt=-1;t.Entdeckt=true;t.Begehbar=true;}
         for(auto& b:Bmp){b.Anzahl=3;b.Surface=nullptr;b.Breite=20;b.Hoehe=30;}
         Spielzustand=State::GAME;Nacht=false;BootsFahrt=false;Tag=1;Stunden=0;Camera={};
-        Interaction::Cancel();Survival::Reset();notice.clear();reachable=true;strict=false;clickedGround={-1,-1};
+        Interaction::Cancel();Interaction::ClearSelection();Campfires::Reset();Survival::Reset();notice.clear();reachable=true;strict=false;clickedGround={-1,-1};
     }
 }
 int main()
@@ -90,6 +91,24 @@ int main()
     Guy.Pos={12,10};Guy.Aktiv=false;Interaction::Update();check(Guy.Aktion==Action::FIELD&&Scape[12][10].AkNummer==8,"arrival resumes existing field progress without resetting it");
     setup();Scape[12][10].Objekt=FELD;Scape[12][10].Phase=0;clickedGround={12,10};
     check(!Interaction::Click(110,110),"unripe completed crops still permit ordinary movement");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[12][10].Objekt=BAUM2;
+    Interaction::Request(Interaction::Intent::Hunt);check(Guy.Aktiv&&RouteZiel.x==12&&strict,"bird hunting walks to nearby tree using exact routing");
+    Interaction::Update();check(Guy.Aktion==Action::NOTHING,"hunting cannot start remotely while walking");
+    Guy.Pos={12,10};Guy.Aktiv=false;Interaction::Update();check(Guy.Aktion==Action::SLINGSHOT,"hunting starts after reaching the tree");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[11][10].Objekt=BAUM1;Scape[11][10].Begehbar=false;Scape[10][12].Objekt=BAUM3;
+    Interaction::Request(Interaction::Intent::Hunt);check(Guy.Aktiv&&RouteZiel.x==10&&RouteZiel.y==12,"blocked nearest tree does not hide another reachable tree");
+    Interaction::StopSafely();Guy.Pos={10,12};Interaction::Update();check(Guy.Aktion==Action::NOTHING,"stop cancels pending bird hunting");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[11][10].Objekt=BAUM1;
+    Interaction::Request(Interaction::Intent::Hunt);Guy.Pos={11,10};Guy.Aktiv=false;Scape[11][10].Objekt=-1;Interaction::Update();check(Guy.Aktion==Action::NOTHING,"hunting arrival rechecks tree existence");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[11][10].Objekt=BAUM1;
+    Interaction::Request(Interaction::Intent::Hunt);Guy.Pos={11,10};Guy.Aktiv=false;Guy.Inventar[ROHSCHLEUDER]=0;Interaction::Update();check(Guy.Aktion==Action::NOTHING,"hunting arrival rechecks tool");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[11][10].Objekt=BAUM1;Scape[11][10].Entdeckt=false;Scape[14][10].Objekt=BAUM1;
+    Interaction::Request(Interaction::Intent::Hunt);check(!Guy.Aktiv&&notice.find(L"附近没有")!=std::wstring::npos,"hunting never targets distant or hidden trees");
+    setup();Guy.Inventar[ROHSCHLEUDER]=1;Scape[11][10].Objekt=BAUM1;Scape[11][10].Begehbar=false;
+    Interaction::Request(Interaction::Intent::Hunt);check(!Guy.Aktiv&&notice.find(L"无法到达")!=std::wstring::npos,"unreachable nearby tree gets an accurate path hint");
+    setup();Scape[11][10].Objekt=FEUER;Scape[12][10].Objekt=FEUER;Scape[11][10].Timer=Scape[12][10].Timer=.5f;
+    Campfires::Sync();Interaction::SelectFire(12,10);check(Interaction::FireTarget().x==12&&!Guy.Aktiv,"fire selection persists without starting a supply action");
+    Scape[12][10].Objekt=FEUERSTELLE;Campfires::Sync();check(Interaction::FireTarget().x==11,"extinguished selection cannot retain the old target");
     setup();Guy.Resource[GESUNDHEIT]=24;Survival::Update();check(Survival::TakeAlert()==1,"critical health triggers pause request");
     Survival::Update();check(Survival::TakeAlert()==0,"critical warning does not repeat every frame");
     Guy.Resource[GESUNDHEIT]=60;Survival::Update();Guy.Resource[GESUNDHEIT]=20;Survival::Update();check(Survival::TakeAlert()==1,"recovered health rearms a later crisis");

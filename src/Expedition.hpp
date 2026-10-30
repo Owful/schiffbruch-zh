@@ -25,7 +25,7 @@ namespace Expedition
     void ToggleHud();
     void DrawAtmosphere();
     void DrawCaches(bool inFrontOfPlayer);
-    void DrawHud();
+    void DrawHud(int mouseX,int mouseY);
     void Notify(const wchar_t* text);
     void CollectTimber();
     std::wstring CurrentNotice();

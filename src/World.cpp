@@ -12,6 +12,7 @@
 #include "Survival.hpp"
 #include "PaceRules.hpp"
 #include "Construction.hpp"
+#include "MapView.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -250,26 +251,8 @@ namespace World
                     }
                 }
 
-                // MiniMap zeichnen
-                rcRectdes.left = 2 * x;
-                rcRectdes.top = 2 * y;
-                rcRectdes.right = rcRectdes.left + 2;
-                rcRectdes.bottom = rcRectdes.top + 2;
-
-                if ((Scape[x][y].Art == 1) && (Scape[x][y].Typ == 0)) // Meer
-                    ddbltfx.dwFillColor = Renderer::RGB2DWORD(41, 86, 92);
-                else
-                {
-                    if ((Scape[x][y].Typ == 0) &&
-                        ((Scape[x][y].Art == 2) ||
-                            (Scape[x][y].Art == 3))) // Strand
-                        ddbltfx.dwFillColor = Renderer::RGB2DWORD(177, 161, 112);
-                    else
-                    // Land
-                        ddbltfx.dwFillColor = Renderer::RGB2DWORD(78 + Scape[x][y].Hoehe * 10, 113 + Scape[x][y].Hoehe * 10, 82 + Scape[x][y].Hoehe * 10);
-                }
-                lpDDSKarte->Blt(&rcRectdes, nullptr, nullptr, DDBLT_COLORFILL, &ddbltfx);
             }
+        MapView::BuildMini();
     }
 
     void CheckSpzButton()
