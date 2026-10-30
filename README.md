@@ -2,11 +2,11 @@
 
 **在荒岛上，重新拾起生活。**
 
-[下载 Windows 预览版](https://github.com/Owful/stillshore/releases) · [游玩指南](docs/游玩指南.md) · [更新记录](CHANGELOG.md) · [原作与署名](#来源与许可)
+[下载 Windows 预览版](https://github.com/Owful/schiffbruch-zh/releases) · [正式 Fork](https://github.com/Owful/stillshore) · [游玩指南](docs/游玩指南.md) · [更新记录](CHANGELOG.md) · [原作与署名](#来源与许可)
 
 一场海难之后，你来到一座随机生成的岛屿。寻找淡水，收集食物，制作工具，搭起庇护所；在探索与生存之间安排一天，留下求救的信号，也为明天留一点希望。
 
-**余岸 Stillshore** 是从 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch) 建立的中文改进版 Fork，原工作名称为“漂流之境 · 交互修正版”。当前为**探索优化预览版**，保留原作像素角色与地图素材，继续完善中文界面、鼠标交互、显示、声音和生存节奏。
+**余岸 Stillshore** 是基于 [eXpl0it3r/Schiffbruch](https://github.com/eXpl0it3r/Schiffbruch) 的中文改进版，原工作名称为“漂流之境 · 交互修正版”。正式 Fork 位于 [Owful/stillshore](https://github.com/Owful/stillshore)，原有的 [schiffbruch-zh](https://github.com/Owful/schiffbruch-zh) 继续同步已完成的内容和下载包。当前为**探索优化预览版**，保留原作像素角色与地图素材，继续完善中文界面、鼠标交互、显示、声音和生存节奏。
 
 > 平台：Windows x64 · 语言：简体中文 · 类型：单人荒岛生存 · 阶段：预览版
 
@@ -16,7 +16,7 @@
 
 ## 下载与开始
 
-前往 [版本下载页](https://github.com/Owful/stillshore/releases) 下载最新的 `Stillshore-…-Windows-x64.zip`，完整解压 **余岸-Stillshore** 文件夹，双击 **开始游戏.vbs**；如果系统禁止运行脚本，也可以直接打开 `bin/Schiffbruch.exe`。首次游玩选“新的旅程”。下载包内不包含个人存档。
+前往 [schiffbruch-zh 下载页](https://github.com/Owful/schiffbruch-zh/releases) 或 [Stillshore 下载页](https://github.com/Owful/stillshore/releases)，下载最新的 `Stillshore-…-Windows-x64.zip`，完整解压 **余岸-Stillshore** 文件夹，双击 **开始游戏.vbs**；如果系统禁止运行脚本，也可以直接打开 `bin/Schiffbruch.exe`。首次游玩选“新的旅程”。两个仓库提供相同版本的下载包，不含个人存档。
 
 旧版存档在 `bin/save.dat`。升级前先备份，再将它放入新版本的 `bin` 文件夹。交互修正版的旧档已做读取与再次保存验证；更早或不同架构的版本未承诺兼容。
 
@@ -85,4 +85,4 @@
 
 原项目以 [Creative Commons Attribution 4.0 International](LICENSE) 发布；本版保留原素材并标明改动。随包的 SFML、OpenAL Soft 和 C++ 运行库有各自的许可，详见 [第三方组件与源码](THIRD_PARTY.md)及 [licenses](licenses)。原作者与第三方库均未为本改进版背书。
 
-早期中文改进版及历史下载保留于 [Owful/schiffbruch-zh](https://github.com/Owful/schiffbruch-zh)。后续开发和新版本以本 Fork 为主。
+项目同时维护正式 Fork [Owful/stillshore](https://github.com/Owful/stillshore) 与原中文改进仓库 [Owful/schiffbruch-zh](https://github.com/Owful/schiffbruch-zh)，同步已完成的改进和预览包；早期版本下载继续保留。
