@@ -154,7 +154,11 @@ bool Application::checkRevision()
         ModernUI::HandleClick(rcKarte.left+1,rcKarte.top+1);
         require(Camera.x==mapCamera.x&&Camera.y==mapCamera.y,"minimap blank corner moved the camera");
         ModernUI::HandleKey(sf::Keyboard::M);require(ModernUI::OverlayActive(),"map key did not open the isometric overview");
-        Renderer::Zeige();const auto mapZoom=PaceRules::zoomStep;ModernUI::HandleWheel(1,600,400);
+        Renderer::Zeige();
+        {const auto* px=reinterpret_cast<const unsigned*>(lpDDSBack->pixels());
+        for(int y=172;y<640;++y)for(int x=134;x<1146;++x)
+            require((px[y*1280+x]&0xffffff)!=0x416263&&(px[y*1280+x]&0xffffff)!=0x659699,"map overview still renders outline or viewport box");}
+        const auto mapZoom=PaceRules::zoomStep;ModernUI::HandleWheel(1,600,400);
         for(int i=0;i<20;++i)GameClock::Advance(100000,true);
         int seenAfterMap=0;for(const auto& column:Scape)for(const auto& t:column)seenAfterMap+=t.Entdeckt;
         require(seenAfterMap==seenBeforeMap&&Minuten==mapMinute&&PaceRules::zoomStep==mapZoom,"viewing the map revealed fog, spent time or changed world zoom");
@@ -438,7 +442,7 @@ Application::Application(const std::string& name, HINSTANCE instance_handle)
       , m_time(std::time(nullptr))
 {
     // Set globals
-    m_window.setTitle(sf::String(L"余岸 Stillshore"));
+    m_window.setTitle(sf::String(L"余岸 Stillshore · v0.1.0-preview.12"));
     // Gameplay has no text fields; keep Chinese IME composition from consuming shortcuts.
     ImmAssociateContext(m_window.getSystemHandle(),nullptr);
     // Start with readable text on high-resolution displays; the window remains resizable.

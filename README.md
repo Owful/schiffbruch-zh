@@ -14,6 +14,8 @@
 
 *上图为测试岛屿完整揭示后的等距总览；实际游玩从人物周围逐步探索，不会提前揭开整座岛屿。*
 
+v0.1.0-preview.12 同时移除了小地图和总览的框线，并修复启动更新时可能覆盖回旧版的问题。主菜单与窗口标题可查看版本号。
+
 ## 下载与开始
 
 前往 [schiffbruch-zh 下载页](https://github.com/Owful/schiffbruch-zh/releases) 或 [Stillshore 下载页](https://github.com/Owful/stillshore/releases)，下载最新的 `Stillshore-…-Windows-x64.zip`，完整解压 **余岸-Stillshore** 文件夹，双击 **开始游戏.vbs**；如果系统禁止运行脚本，也可以直接打开 `bin/Schiffbruch.exe`。首次游玩选“新的旅程”。两个仓库提供相同版本的下载包，不含个人存档。

@@ -9,23 +9,9 @@ namespace MapView
 {
     namespace
     {
-        constexpr COLORREF Ink=RGB(16,37,42),Gold=RGB(224,197,139),Border=RGB(65,98,99);
-        void outline(HDC dc,const MapProjection::Frame& frame)
-        {
-            std::array<POINT,5> points{};int i=0;
-            for(const auto corner:std::array<MapProjection::Coordinate,5>{{{-.5,-.5},{59.5,-.5},{59.5,59.5},{-.5,59.5},{-.5,-.5}}})
-            {const auto world=MapProjection::TileCenter(corner.x,corner.y);const auto p=frame.project(world.x,world.y);points[i++]={p.x,p.y};}
-            auto pen=CreatePen(PS_SOLID,1,Border);auto previous=SelectObject(dc,pen);Polyline(dc,points.data(),int(points.size()));SelectObject(dc,previous);DeleteObject(pen);
-        }
+        constexpr COLORREF Ink=RGB(16,37,42),Gold=RGB(224,197,139);
         void markers(HDC dc,const MapProjection::Frame& frame,bool large)
         {
-            if(large)
-            {
-            const auto crop=SceneView::Crop();
-            const auto a=frame.project(Camera.x+crop.left,Camera.y+crop.top),b=frame.project(Camera.x+crop.right,Camera.y+crop.bottom);
-            auto pen=CreatePen(PS_SOLID,1,RGB(101,150,153));auto previousPen=SelectObject(dc,pen);auto previousBrush=SelectObject(dc,GetStockObject(HOLLOW_BRUSH));
-            Rectangle(dc,a.x,a.y,b.x,b.y);SelectObject(dc,previousBrush);SelectObject(dc,previousPen);DeleteObject(pen);
-            }
             const auto player=frame.project(Guy.PosScreen.x,Guy.PosScreen.y);const int r=large?4:2;
             HPEN pen;HGDIOBJ previousPen,previousBrush;
             auto brush=CreateSolidBrush(Gold);pen=CreatePen(PS_SOLID,1,RGB(30,39,36));previousBrush=SelectObject(dc,brush);previousPen=SelectObject(dc,pen);
@@ -73,7 +59,7 @@ namespace MapView
             if(object==FEUER){const auto bounds=Campfires::Sprite(t);px=bounds.x;py=bounds.y;w=bounds.w;h=bounds.h;}
             const auto a=frame.project(px,py),end=frame.project(px+w,py+h);RECT target{a.x,a.y,end.x,end.y};lpDDSBack->Blt(&target,b.Surface,&sprite,DDBLT_KEYSRC,nullptr);
         }
-        HDC dc=nullptr;lpDDSBack->GetDC(&dc);const int saved=SaveDC(dc);IntersectClipRect(dc,134,172,1146,640);outline(dc,frame);markers(dc,frame,true);RestoreDC(dc,saved);lpDDSBack->ReleaseDC(dc);
+        HDC dc=nullptr;lpDDSBack->GetDC(&dc);const int saved=SaveDC(dc);IntersectClipRect(dc,134,172,1146,640);markers(dc,frame,true);RestoreDC(dc,saved);lpDDSBack->ReleaseDC(dc);
     }
     bool Focus(int x,int y,const MapProjection::Frame& frame)
     {

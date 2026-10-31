@@ -399,7 +399,7 @@ namespace ModernUI
         button(100,330,284,50,L"继续旅程",[]{StartGame(false);},saved);
         button(100,394,284,50,L"新的旅程",[]{if(std::filesystem::exists("save.dat"))confirmNew=true;else StartGame(true);});
         button(100,458,136,42,L"设置",[]{paused=true;settings=true;});button(248,458,136,42,L"退出",[]{quit=true;});
-        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。",13,MUTED);end();
+        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。  ·  v0.1.0-preview.12",13,MUTED);end();
         DrawOverlay();NativeDisplay::Present();
     }
     void DrawCredits()
@@ -459,9 +459,9 @@ namespace ModernUI
             txt(134,98,L"岛屿地图",25,GOLD);txt(134,137,L"等距斜视 · 点击已探索地块，将镜头移到那里",13,MUTED);
             button(1008,102,136,36,L"返回岛屿  M",[]{mapOpen=false;Direct::Reset();});
             MapView::DrawOverview();
-            txt(134,650,L"金色圆点：你的位置    浅色方框：当前视野    暗处：尚未探索",13,MUTED);end();return;
+            txt(134,650,L"金色圆点：你的位置    暗处：尚未探索",13,MUTED);end();return;
         }
-        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程");
+        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程 · v0.1.0-preview.12");
         if(safety)
         {
             txt(326,231,L"当前行动已停止，请先处理生存需要。",16,GOLD);

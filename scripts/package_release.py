@@ -2,13 +2,15 @@
 
 import argparse
 import hashlib
+import re
+import sys
 from pathlib import Path
 import subprocess
 import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.11"
+VERSION = "v0.1.0-preview.12"
 NAME = f"Stillshore-{VERSION}"
 RUNTIME_FOLDER = "余岸-Stillshore"
 DOCUMENTS = (
@@ -86,6 +88,28 @@ def main():
     cache = ROOT / "build-release" / "CMakeCache.txt"
     if cache.exists() and "SCHIFFBRUCH_QA_PREVIEW:BOOL=OFF" not in cache.read_text(encoding="utf-8"):
         parser.error("Release build has QA preview enabled")
+
+    expected = tuple(map(int,re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)-preview\.(\d+)",VERSION).groups()))
+    resource = (ROOT / "src" / "Schiffbruch.rc").read_text(encoding="utf-8")
+    declared = re.search(r"FILEVERSION\s+(\d+),(\d+),(\d+),(\d+)",resource)
+    if not declared or tuple(map(int,declared.groups())) != expected:
+        parser.error("Windows file version does not match package version")
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+        native = ctypes.WinDLL("version",use_last_error=True)
+        native.GetFileVersionInfoSizeW.argtypes=[wintypes.LPCWSTR,ctypes.c_void_p]
+        size=native.GetFileVersionInfoSizeW(str(exe),None)
+        if not size:parser.error("Executable lacks Windows version metadata")
+        data=ctypes.create_string_buffer(size)
+        native.GetFileVersionInfoW.argtypes=[wintypes.LPCWSTR,wintypes.DWORD,wintypes.DWORD,ctypes.c_void_p]
+        if not native.GetFileVersionInfoW(str(exe),0,size,data):parser.error("Cannot read executable version")
+        info=ctypes.c_void_p();length=wintypes.UINT()
+        native.VerQueryValueW.argtypes=[ctypes.c_void_p,wintypes.LPCWSTR,ctypes.POINTER(ctypes.c_void_p),ctypes.POINTER(wintypes.UINT)]
+        if not native.VerQueryValueW(data,"\\",ctypes.byref(info),ctypes.byref(length)):parser.error("Missing fixed file version")
+        words=ctypes.cast(info,ctypes.POINTER(wintypes.DWORD))
+        actual=(words[2]>>16,words[2]&65535,words[3]>>16,words[3]&65535)
+        if actual != expected:parser.error("Executable build is older than the release metadata")
 
     output.mkdir(parents=True, exist_ok=True)
     binaries = [path for path in (runtime / "bin").iterdir() if path.is_file() and path.suffix.lower() in {".exe", ".dll"}]
