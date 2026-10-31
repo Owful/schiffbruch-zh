@@ -146,6 +146,11 @@ bool Application::checkRevision()
         // The map keeps the square grid's diamond perspective without revealing unexplored tiles.
         startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();World::Generate();
         ModernUI::DrawPanel();
+        {HDC dc=nullptr;lpDDSBack->GetDC(&dc);auto brush=CreateSolidBrush(RGB(7,9,11));FillRect(dc,&rcKarte,brush);DeleteObject(brush);lpDDSBack->ReleaseDC(dc);
+         MapView::DrawMini();const auto* pixels=reinterpret_cast<const unsigned*>(lpDDSBack->pixels());
+         require((pixels[(rcKarte.top+2)*1280+rcKarte.left+2]&0xffffff)==0x07090b,"minimap painted over its transparent corner");
+         require((pixels[(rcKarte.top+60)*1280+rcKarte.left+60]&0xffffff)!=0x07090b,"diamond minimap interior was not drawn");}
+        ModernUI::DrawPanel();
         {const auto* pixels=reinterpret_cast<const unsigned*>(lpDDSBack->pixels());
          for(int my=rcKarte.top;my<rcKarte.bottom;++my)for(int mx=rcKarte.left;mx<rcKarte.right;++mx)
              require((pixels[my*1280+mx]&0xffffff)!=0x416263&&(pixels[my*1280+mx]&0xffffff)!=0x659699,"minimap still draws map or viewport outlines");}
@@ -215,6 +220,7 @@ bool Application::checkRevision()
         require(Crafting::Make(ROHAXT),"saved job did not start");for(int i=0;i<4;++i)Crafting::Update(250000,true);
         const float fraction=Crafting::Job().fraction;Game::SaveGame();require(Game::LoadGame()&&Crafting::Busy()&&Crafting::Job().fraction==fraction,"active crafting job did not survive native save/load");finish();
         require(Guy.Inventar[ROHAXT]==1&&Guy.Inventar[ROHAST]==9,"resumed job did not consume exactly one recipe");
+        require(DayJournal::made[DayJournal::MadeAxe]==1,"completed native craft was not recorded for tonight");
 
         // Exercise real route following and tent-entry animations at night.
         const auto nightSetup=[&](){
@@ -238,9 +244,11 @@ bool Application::checkRevision()
         Nightfall::Update(100000,true);
         for(int i=0;i<6000&&Guy.Aktion==Action::TENT;++i){++Bild;Math::Animationen();if(!Guy.Aktiv)Action::handler(Guy.Aktion);Nightfall::Update(16667,true);}
         require(Scape[27][27].Objekt==ZELT&&Scape[27][27].Phase==0&&!Nightfall::Line().empty(),"unfinished tent did not finish before resting");
+        require((DayJournal::finished&2)!=0,"completed native tent was not recorded as finished");
         nightSetup();Stunden=2;Minuten=0;Bmp[FELD].Rohstoff[ROHAST]=4;Bmp[FELD].First=false;Guy.Inventar[ROHEGGE]=1;Guy.Inventar[ROHAST]=1;Guy.Aktion=Action::FIELD;
         for(int i=0;i<6000&&Guy.Aktion!=Action::CANCEL;++i){++Bild;Math::Animationen();if(!Guy.Aktiv)Action::handler(Guy.Aktion);}
         require(Guy.Aktion==Action::CANCEL&&Scape[27][27].AkNummer>0,"field did not pause for actual missing materials");
+        require((DayJournal::worked&1)!=0&&(DayJournal::finished&1)==0,"paused native field was not recorded as unfinished work");
         const int savedStage=Scape[27][27].AkNummer;const auto missing=Construction::Missing(Scape[27][27]);
         require(missing==L"树枝3","paused field shortage did not reflect its remaining materials");
         for(int i=0;i<1200&&Guy.Aktion!=Action::NOTHING;++i){++Bild;Math::Animationen();if(!Guy.Aktiv)Action::handler(Guy.Aktion);}
@@ -253,6 +261,7 @@ bool Application::checkRevision()
         require(Guy.Aktion==Action::FIELD&&Scape[27][27].AkNummer==savedStage,"returning to field reset its existing progress");
         for(int i=0;i<6000&&Guy.Aktion==Action::FIELD;++i){++Bild;Math::Animationen();if(!Guy.Aktiv)Action::handler(Guy.Aktion);}
         require(Scape[27][27].Phase==0&&Guy.Aktion==Action::NOTHING,"resumed field did not finish cultivating");
+        require((DayJournal::finished&1)!=0,"resumed native field was not recorded as completed");
         Gitter=false;Direct::QueueKeyPress(sf::Keyboard::G);Direct::ClearInput();Direct::CheckKey();
         require(!Gitter,"focus reset replayed an old grid key");
         NativeDisplay::Resize(640,360);NativeDisplay::Resize(1280,720);require(!Gitter,"window resize changed grid preference");
@@ -397,7 +406,8 @@ bool Application::checkRevision()
         Tag=5;Stunden=11;nightTile.Art=2;nightTile.Objekt=-1;Guy.Inventar[ROHSTEIN]=9;Guy.Aktion=Action::SEARCH;Guy.AkNummer=10;Action::handler(Guy.Aktion);
         require(Guy.Inventar[ROHSTEIN]==10&&DayJournal::loot[DayJournal::Stone]==1,"search journal did not record the actual quantity received at the inventory limit");
         PapierText=-1;Guy.Aktiv=false;nightTile.Objekt=ZELT;nightTile.Phase=0;Stunden=12;
-        DayJournal::Mark(Tag,DayJournal::Food);DayJournal::Mark(Tag,DayJournal::Craft);DayJournal::RecordLoot(Tag,DayJournal::Branch,3);
+        DayJournal::Mark(Tag,DayJournal::Food);DayJournal::RecordMade(Tag,DayJournal::MadeAxe);DayJournal::RecordMade(Tag,DayJournal::MadeWaterskin);DayJournal::RecordLoot(Tag,DayJournal::Branch,3);
+        DayJournal::Mark(Tag,DayJournal::Explore);DayJournal::Mark(Tag,DayJournal::Timber);DayJournal::RecordLoot(Tag,DayJournal::Log,5);DayJournal::Project(Tag,1,true);
         Guy.Aktion=Action::DAY_END;Guy.AkNummer=6;Guy.Aktiv=false;Action::handler(Guy.Aktion);
         require(Nacht&&DayJournal::Active()&&PapierText==-1&&Guy.Resource[GESUNDHEIT]==95.f,"overnight journal did not preserve the shelter outcome");
         Renderer::Zeige();const auto* nightPixels=lpDDSBack->pixels();require(nightPixels[4*(120*1280+250)]!=0,"night journal was not rendered");
@@ -442,7 +452,7 @@ Application::Application(const std::string& name, HINSTANCE instance_handle)
       , m_time(std::time(nullptr))
 {
     // Set globals
-    m_window.setTitle(sf::String(L"余岸 Stillshore · v0.1.0-preview.12"));
+    m_window.setTitle(sf::String(L"余岸 Stillshore · v0.1.0-preview.13"));
     // Gameplay has no text fields; keep Chinese IME composition from consuming shortcuts.
     ImmAssociateContext(m_window.getSystemHandle(),nullptr);
     // Start with readable text on high-resolution displays; the window remains resizable.

@@ -26,6 +26,7 @@ namespace Action
         const bool building=event==FIELD||event==TENT||event==BOAT||event==PIPE||event==SOS_SIGN||event==HOUSE1||event==HOUSE2||event==HOUSE3||event==FIREPLACE;
         const bool validPos=Guy.Pos.x>=0&&Guy.Pos.y>=0&&Guy.Pos.x<MAXXKACH&&Guy.Pos.y<MAXYKACH;
         const auto oldPos=Guy.Pos;const int oldBuild=building&&validPos?Scape[oldPos.x][oldPos.y].AkNummer:0;
+        const float oldBuildPhase=building&&validPos?Scape[oldPos.x][oldPos.y].Phase:-1;
         if (event != NOTHING)
         {
             Routing::MarkRoute(false);
@@ -127,7 +128,10 @@ namespace Action
             death();
             break;
         }
-        if(building&&validPos&&Scape[oldPos.x][oldPos.y].AkNummer>oldBuild)DayJournal::Mark(Tag,DayJournal::Build);
+        if(building&&validPos)
+        {const auto& t=Scape[oldPos.x][oldPos.y];if(t.Objekt>=FELD&&t.Objekt<=FEUERSTELLE)
+         {const bool complete=oldBuildPhase>=Bmp[t.Objekt].Anzahl&&t.Phase>=0&&t.Phase<Bmp[t.Objekt].Anzahl;
+          if(t.AkNummer>oldBuild||complete)DayJournal::Project(Tag,unsigned(t.Objekt-FELD),complete);}}
         if(collecting)for(unsigned i=0;i<before.size();++i)DayJournal::RecordLoot(Tag,lootKinds[i],Guy.Inventar[lootItems[i]]-before[i]);
     }
 
@@ -708,7 +712,7 @@ namespace Action
         case 4:
             Guy.Aktiv = true;
             Guy.Zustand = GUYSUCHEN;
-            World::AddResource(NAHRUNG, 5);
+            World::AddResource(NAHRUNG, 5);DayJournal::Mark(Tag,DayJournal::Hunt);
             World::AddTime(0, 20);
             break;
         case 5:
@@ -883,7 +887,7 @@ namespace Action
                 Guy.Zustand = GUYANGELN2UNTEN;
                 break;
             }
-            Guy.Resource[GESUNDHEIT] += 2;
+            Guy.Resource[GESUNDHEIT] += 2;DayJournal::Mark(Tag,DayJournal::Fish);
             World::AddTime(0, 20);
             break;
         case 7:
@@ -943,7 +947,7 @@ namespace Action
             Scape[Guy.Pos.x][Guy.Pos.y].Objekt = FEUER;
             Scape[Guy.Pos.x][Guy.Pos.y].ObPos.x = static_cast<short>(Bmp[FEUER].rcDes.left);
             Scape[Guy.Pos.x][Guy.Pos.y].ObPos.y = static_cast<short>(Bmp[FEUER].rcDes.top);
-            Scape[Guy.Pos.x][Guy.Pos.y].Timer=0;Campfires::Register(Guy.Pos.x,Guy.Pos.y);
+            Scape[Guy.Pos.x][Guy.Pos.y].Timer=0;Campfires::Register(Guy.Pos.x,Guy.Pos.y);DayJournal::Mark(Tag,DayJournal::Light);
             Chance += 2 + 2 * Scape[Guy.Pos.x][Guy.Pos.y].Hoehe;
             World::AddTime(0, 2);
             Guy.PosScreen.x -= 5;

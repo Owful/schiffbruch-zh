@@ -139,10 +139,12 @@ namespace Crafting
         const int product=pendingProduct;Cancel(false);
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return;}
         if(IsSupplyAction(product)){Expedition::CompleteSupplyAction(product);return;}
-        if(product==Waterskin){if(Expedition::CraftWaterskin())DayJournal::Mark(Tag,DayJournal::Craft);return;}
-        if(product==Bandage){if(Expedition::CraftBandage())DayJournal::Mark(Tag,DayJournal::Craft);return;}
+        if(product==Waterskin){if(Expedition::CraftWaterskin())DayJournal::RecordMade(Tag,DayJournal::MadeWaterskin);return;}
+        if(product==Bandage){if(Expedition::CraftBandage())DayJournal::RecordMade(Tag,DayJournal::MadeBandage);return;}
         const auto* r=Find(product);for(const auto& cost:r->costs)Guy.Inventar[cost.item]-=cost.count;
-        Guy.Inventar[product]=1;SyncUnlocks();DayJournal::Mark(Tag,DayJournal::Craft);
+        Guy.Inventar[product]=1;SyncUnlocks();
+        const int products[]={ROHAXT,ROHEGGE,ROHANGEL,ROHSCHLEUDER,ROHHAMMER,ROHSCHAUFEL,ROHSTREICHHOLZ};
+        for(unsigned i=0;i<std::size(products);++i)if(products[i]==product)DayJournal::RecordMade(Tag,static_cast<DayJournal::Made>(i));
         const auto message=L"制作完成："+Name(product)+L"。"+r->purpose+L"。";Expedition::Notify(message.c_str());
     }
     int MissingForAction(int button)

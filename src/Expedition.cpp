@@ -261,11 +261,11 @@ namespace Expedition
         else if(action==Crafting::FeedFire)
         {
             const bool log=Guy.Inventar[ROHSTAMM]>0;Guy.Inventar[log?ROHSTAMM:ROHAST]-=log?1:2;
-            auto& t=Scape[Guy.Pos.x][Guy.Pos.y];t.Timer=std::max(0.f,t.Timer-(log?.30f:.12f));
+            auto& t=Scape[Guy.Pos.x][Guy.Pos.y];t.Timer=std::max(0.f,t.Timer-(log?.30f:.12f));DayJournal::Mark(Tag,DayJournal::Feed);
             Notify(log?L"添柴完成：原木 −1，篝火燃料增加 30%。":L"添柴完成：树枝 −2，篝火燃料增加 12%。");
         }
         else if(action==Crafting::FillWater)
-        {progress.water=3;progress.waterVisited=true;Notify(L"水壶已装满：3 / 3。");}
+        {progress.water=3;progress.waterVisited=true;DayJournal::Mark(Tag,DayJournal::Fill);Notify(L"水壶已装满：3 / 3。");}
         else if(action==Crafting::DrinkWater)
         {--progress.water;World::AddResource(WASSER,25);DayJournal::Mark(Tag,DayJournal::Water);Notify(L"喝下一份储存的淡水，水分 +25。");}
         else if(action==Crafting::ApplyBandage)

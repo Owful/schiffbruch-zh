@@ -399,7 +399,7 @@ namespace ModernUI
         button(100,330,284,50,L"继续旅程",[]{StartGame(false);},saved);
         button(100,394,284,50,L"新的旅程",[]{if(std::filesystem::exists("save.dat"))confirmNew=true;else StartGame(true);});
         button(100,458,136,42,L"设置",[]{paused=true;settings=true;});button(248,458,136,42,L"退出",[]{quit=true;});
-        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。  ·  v0.1.0-preview.12",13,MUTED);end();
+        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。  ·  v0.1.0-preview.13",13,MUTED);end();
         DrawOverlay();NativeDisplay::Present();
     }
     void DrawCredits()
@@ -424,11 +424,19 @@ namespace ModernUI
         for(int i=0;i<45;++i){const int x=40+(i*197)%1200,y=25+(i*79)%165;fill(x,y,2,2,RGB(84+i%4*18,104+i%4*16,115+i%4*14));}
         fill(104,67,1072,588,RGB(19,34,42));fill(104,67,1072,2,GOLD);
         txt(145,91,L"第 "+std::to_wstring(Tag)+L" 天",13,GOLD);txt(145,117,L"夜晚的手记",25,FG);
-        txt(145,154,L"让今天慢慢落下，也为明天留一点光。",13,MUTED);
+        txt(145,154,L"收工，躺好。今天这一天，我得自己念叨两句。",13,MUTED);
         line(145,185,990,LINE);
-        txt(145,207,L"今天的足迹",16,GOLD);
-        const auto summary=DayJournal::Summary();int y=246;
-        for(const auto& item:summary){txt(145,y,L"·  "+item,16,FG);y+=28;}
+        const auto& nightTile=Scape[Guy.Pos.x][Guy.Pos.y];
+        const int shelter=nightTile.Objekt==ZELT&&nightTile.Phase<Bmp[ZELT].Anzahl?1:nightTile.Objekt==HAUS3&&nightTile.Phase<Bmp[HAUS3].Anzahl?2:0;
+        const auto weather=ExpeditionRules::weather(Tag);
+        DayJournal::SetContext(int(Guy.Resource[WASSER]),int(Guy.Resource[NAHRUNG]),int(Guy.Resource[GESUNDHEIT]),shelter,weather==ExpeditionRules::Weather::Storm?2:weather==ExpeditionRules::Weather::Rain?1:0);
+        txt(145,207,L"睡前嘀咕",16,GOLD);
+        const auto summary=DayJournal::Summary();int bodySize=16;
+        const auto measure=[&](int size){auto old=SelectObject(active,font(size));int total=0;for(const auto& line:summary){RECT r{0,0,570,4096};DrawTextW(active,line.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX|DT_CALCRECT);total+=r.bottom+9;}SelectObject(active,old);return total;};
+        if(measure(bodySize)>215)bodySize=13;
+        auto bodyFont=SelectObject(active,font(bodySize));SetTextColor(active,FG);int y=236;
+        for(const auto& item:summary){RECT r{145,y,715,4096};DrawTextW(active,item.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX|DT_CALCRECT);DrawTextW(active,item.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX);y=r.bottom+9;}
+        SelectObject(active,bodyFont);
         fill(755,203,380,230,RGB(25,45,51));fill(755,203,2,230,RGB(135,126,91));
         txt(781,222,L"今日收获",16,GOLD);txt(781,250,L"实际入包的数量，含后来用掉的物资",13,MUTED);
         const auto loot=DayJournal::LootSummary();
@@ -439,7 +447,7 @@ namespace ModernUI
             txt(x,row,loot[i].name,13,FG);txt(x+107,row,L"+"+std::to_wstring(loot[i].count),13,GOLD);
         }
         fill(145,467,990,96,RGB(31,48,51));fill(145,467,3,96,GOLD);
-        txt(170,483,L"给今天的你",13,GOLD);
+        txt(170,483,L"临睡前最后一句",13,GOLD);
         auto old=SelectObject(active,font(16));SetBkMode(active,TRANSPARENT);SetTextColor(active,RGB(237,225,196));
         const auto encouragement=DayJournal::Encouragement(Tag);RECT r{170,511,1105,555};DrawTextW(active,encouragement.c_str(),-1,&r,DT_WORDBREAK|DT_NOPREFIX);SelectObject(active,old);
         const auto& tile=Scape[Guy.Pos.x][Guy.Pos.y];
@@ -461,7 +469,7 @@ namespace ModernUI
             MapView::DrawOverview();
             txt(134,650,L"金色圆点：你的位置    暗处：尚未探索",13,MUTED);end();return;
         }
-        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程 · v0.1.0-preview.12");
+        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程 · v0.1.0-preview.13");
         if(safety)
         {
             txt(326,231,L"当前行动已停止，请先处理生存需要。",16,GOLD);

@@ -10,7 +10,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "v0.1.0-preview.12"
+VERSION = "v0.1.0-preview.13"
 NAME = f"Stillshore-{VERSION}"
 RUNTIME_FOLDER = "余岸-Stillshore"
 DOCUMENTS = (

@@ -9,7 +9,7 @@ namespace MapView
 {
     namespace
     {
-        constexpr COLORREF Ink=RGB(16,37,42),Gold=RGB(224,197,139);
+        constexpr COLORREF Ink=RGB(29,54,57),Gold=RGB(224,197,139);
         void markers(HDC dc,const MapProjection::Frame& frame,bool large)
         {
             const auto player=frame.project(Guy.PosScreen.x,Guy.PosScreen.y);const int r=large?4:2;
@@ -39,9 +39,13 @@ namespace MapView
     }
     void DrawMini()
     {
-        RECT source{0,0,120,120};lpDDSBack->Blt(&rcKarte,lpDDSKarte,&source,0,nullptr);
-        HDC dc=nullptr;lpDDSBack->GetDC(&dc);const int saved=SaveDC(dc);IntersectClipRect(dc,rcKarte.left,rcKarte.top,rcKarte.right,rcKarte.bottom);
-        markers(dc,MiniFrame(),false);RestoreDC(dc,saved);lpDDSBack->ReleaseDC(dc);
+        HDC dc=nullptr,source=nullptr;lpDDSBack->GetDC(&dc);lpDDSKarte->GetDC(&source);const int saved=SaveDC(dc);
+        const auto frame=MiniFrame();POINT points[4];int i=0;
+        for(const auto corner:std::array<MapProjection::Coordinate,4>{{{-.5,-.5},{59.5,-.5},{59.5,59.5},{-.5,59.5}}})
+        {const auto world=MapProjection::TileCenter(corner.x,corner.y);const auto p=frame.project(world.x,world.y);points[i++]={p.x,p.y};}
+        const auto diamond=CreatePolygonRgn(points,4,WINDING);SelectClipRgn(dc,diamond);
+        BitBlt(dc,rcKarte.left,rcKarte.top,120,120,source,0,0,SRCCOPY);
+        markers(dc,frame,false);RestoreDC(dc,saved);DeleteObject(diamond);lpDDSKarte->ReleaseDC(source);lpDDSBack->ReleaseDC(dc);
     }
     void DrawOverview()
     {
