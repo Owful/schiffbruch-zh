@@ -88,7 +88,7 @@ namespace ModernUI
             if(id==BUTTESSEN){Interaction::Request(Interaction::Intent::FoodWater);return;}
             if(id==BUTTFAELLEN){Interaction::Request(Interaction::Intent::Chop);return;}
             if(id==BUTTSCHLEUDER){Interaction::Request(Interaction::Intent::Hunt);return;}
-            if(Guy.Aktiv&&id!=BUTTSTOP){Expedition::Notify(L"正在行动中。可以先点击“停止”，再选择新的行动。");return;}
+            if(id!=BUTTSTOP&&!Interaction::Replace())return;
             if(Bmp[id].Phase==-1){Expedition::Notify(L"尚未解锁。打开“制作”准备所需工具，或探索沉船获得新物品。");return;}
             const auto old=MousePosition;
             MousePosition={short((Bmp[id].rcDes.left+Bmp[id].rcDes.right)/2),short((Bmp[id].rcDes.top+Bmp[id].rcDes.bottom)/2)};
@@ -243,7 +243,7 @@ namespace ModernUI
         std::array<bool,ContextBar::Count> bottomAvailable()
         {
             const auto supplies=Expedition::GetInfo();
-            const bool idle=!Guy.Aktiv&&Guy.Aktion==Action::NOTHING&&!Crafting::Busy()&&!Nightfall::Pending()&&!Nacht;
+            const bool idle=Spielzustand==State::GAME&&!Nightfall::Pending()&&!Nacht&&Guy.Aktion!=Action::DEATH&&Guy.Aktion!=Action::RESCUED&&Guy.Aktion!=Action::DAY_END;
             const auto& tile=Scape[Guy.Pos.x][Guy.Pos.y];
             const auto fire=Interaction::FireTarget();
             bool canBoat=tile.Objekt==BOOT&&tile.Phase<Bmp[BOOT].Anzahl;
@@ -541,9 +541,14 @@ namespace ModernUI
             fn();return true;
         }
         if(OverlayActive()||FirePanelHit(x,y)||x>=960||y<64||y>=656)return true;
-        if(Crafting::Busy()||Nightfall::Pending())
-        {const auto message=Crafting::Busy()?L"正在"+std::wstring(Crafting::UsingSupply()?L"":L"制作")+Crafting::Name(Crafting::Job().product)+L"，可等待完成或点击下方停止按钮。":L"正在收工返营，请稍候。";Expedition::Notify(message.c_str());return true;}
-        if(Spielzustand==State::GAME){const auto p=SceneView::ToScene(x,y);return Interaction::Click(p.x,p.y);}return false;
+        if(Nightfall::Pending())return true;
+        if(Spielzustand==State::GAME)
+        {
+            const auto p=SceneView::ToScene(x,y);if(Interaction::Click(p.x,p.y))return true;
+            const auto tile=Renderer::GetKachel(short(p.x+Camera.x),short(p.y+Camera.y));
+            if(tile.x>0&&tile.y>0&&tile.x<MAXXKACH-1&&tile.y<MAXYKACH-1&&Scape[tile.x][tile.y].Entdeckt&&Scape[tile.x][tile.y].Begehbar)Interaction::Replace();
+        }
+        return false;
     }
     bool HandleWheel(float delta,int x,int y)
     {
@@ -573,7 +578,7 @@ namespace ModernUI
     void Interact()
     {
         if(Nightfall::Pending()){Expedition::Notify(L"天黑了，先收工休息。");return;}
-        if(Guy.Aktiv){Expedition::Notify(L"正在行动。需要改变计划时，先点击“停止行动”。");return;}
+
         const auto& t=Scape[Guy.Pos.x][Guy.Pos.y];const int old=HauptMenue;HauptMenue=Menu::ACTION;
         if(Interaction::Request(Interaction::Intent::Any)){HauptMenue=old;return;}
         if((t.Objekt>=FLUSS1&&t.Objekt<=SCHLEUSE6)||(t.Objekt==ROHR&&t.Phase==1)||((t.Objekt==BUSCH||t.Objekt==FELD)&&t.Phase==Bmp[t.Objekt].Anzahl-1))legacy(BUTTESSEN);

@@ -17,6 +17,7 @@
 #include "Campfires.hpp"
 
 #include <fstream>
+#include <vector>
 
 namespace Game
 {
@@ -2368,7 +2369,12 @@ namespace Game
 
             // Guy Position
             Guy.Pos.x = 1;
-            Guy.Pos.y = MAXYKACH / 2;
+            std::vector<short> landingRows;ZWEID pirate{-100,-100};
+            for(short py=1;py<MAXYKACH-1;++py)for(short px=1;px<MAXXKACH-1;++px)if(Scape[px][py].Objekt==WRACK2)pirate={px,py};
+            for(short row=5;row<MAXYKACH-5;++row)
+            {int first=1;while(first<MAXXKACH-2&&Scape[first][row].Art==1)++first;
+             if(first>3&&first<MAXXKACH-4&&Scape[first][row].Begehbar&&std::abs(first-2-pirate.x)+std::abs(row-pirate.y)>=8)landingRows.push_back(row);}
+            Guy.Pos.y=landingRows.empty()?MAXYKACH/2:landingRows[rand()%landingRows.size()];
             Guy.PosScreen.x =
             (Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][0].x +
                 Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][2].x) / 2;

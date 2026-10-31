@@ -22,6 +22,7 @@ namespace World
         Expedition::OnTime(hours*60+minutes,start);
     }
 }
+namespace Interaction {bool Replace(){Crafting::Cancel(false);Guy.Aktiv=false;Guy.Aktion=Action::NOTHING;return true;}}
 namespace Renderer { void LimitScroll() {} }
 namespace NativeDisplay {sf::Vector2i MousePoint(){return {-1,-1};}}
 namespace

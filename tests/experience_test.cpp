@@ -11,8 +11,8 @@
 #include <string>
 
 namespace {bool reachable=true,strict=false;int failures=0;std::wstring notice;ZWEID clickedGround{-1,-1};}
-namespace Expedition {void Notify(const wchar_t* text){notice=text;} int CacheAt(int,int){return -1;} void CacheHint(int,int){}}
-namespace Crafting {bool StartSupplyAction(int){return true;}}
+namespace Expedition {void CollectTimber(){} void Notify(const wchar_t* text){notice=text;} int CacheAt(int,int){return -1;} void CacheHint(int,int){}}
+namespace Crafting {void Cancel(bool){} bool StartSupplyAction(int){return true;}}
 namespace Renderer {ZWEID GetKachel(short,short){return clickedGround;}}
 namespace Routing
 {

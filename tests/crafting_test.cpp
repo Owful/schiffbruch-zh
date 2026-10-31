@@ -14,6 +14,7 @@ namespace World
     void AddTime(short h,short m){const int elapsed=PaceRules::workMinutes(h*60+m);Minuten+=elapsed;while(Minuten>=60){++Stunden;Minuten-=60;}}
     void AddResource(short kind,float amount){Guy.Resource[kind]=std::clamp(Guy.Resource[kind]+PaceRules::resourceChange(amount),0.f,100.f);}
 }
+namespace Interaction {bool Replace(){Crafting::Cancel(false);Guy.Aktiv=false;Guy.Aktion=Action::NOTHING;return true;}}
 namespace Renderer { void LimitScroll() {} }
 namespace NativeDisplay {sf::Vector2i MousePoint(){return {-1,-1};}}
 int main()
@@ -64,6 +65,6 @@ int main()
     check(Expedition::GetInfo().water==2&&Guy.Resource[WASSER]==65,"saved drink consumes one charge and applies one effect");
     Expedition::FillWaterskin();Scape[20][20].Objekt=-1;while(Crafting::Busy())Crafting::Update(100000,true);
     check(Expedition::GetInfo().water==2,"refill rechecks that freshwater still exists at completion");
-    Guy.Aktiv=true;Guy.Inventar[ROHAXT]=0;const int stone=Guy.Inventar[ROHSTEIN];check(!Crafting::Make(ROHAXT)&&Guy.Inventar[ROHSTEIN]==stone,"crafting while walking or working cannot mutate inventory");
+    Guy.Aktiv=true;Guy.Inventar[ROHAXT]=0;const int stone=Guy.Inventar[ROHSTEIN];check(Crafting::Make(ROHAXT)&&Guy.Inventar[ROHSTEIN]==stone,"crafting replaces walking and reserves materials until completion");Crafting::Cancel(false);
     if(failures)return 1;std::cout<<"Crafting outputs, prerequisites, action unlocks and explicit consumable crafting passed.\n";
 }

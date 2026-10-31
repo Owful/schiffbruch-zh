@@ -1,4 +1,6 @@
 #include "Action.hpp"
+#include "Rescue.hpp"
+#include "Crafting.hpp"
 #include "Expedition.hpp"
 #include "DayJournal.hpp"
 #include "Campfires.hpp"
@@ -1387,97 +1389,13 @@ namespace Action
 
     void rescued()
     {
-        Guy.AkNummer++;
-        switch (Guy.AkNummer)
+        switch(++Guy.AkNummer)
         {
-        case 1:
-        {
-            ZWEID Erg = Renderer::GetKachel(Guy.PosAlt.x, Guy.PosAlt.y);
-            if ((Erg.x == Guy.Pos.x) && (Erg.y == Guy.Pos.y)) Routing::ShortRoute(Guy.PosAlt.x, Guy.PosAlt.y);
-            else if (RoutePunkt % 2 == 0) Routing::ShortRoute(RouteKoor[RoutePunkt].x, RouteKoor[RoutePunkt].y); //Nur bis zur Mitte der aktuellen Kacheln laufen
-            else Routing::ShortRoute(RouteKoor[RoutePunkt + 1].x, RouteKoor[RoutePunkt + 1].y);
-            TwoClicks = -1; // Keine Ahnung warum ich das hier machen muß
-            break;
-        }
-        case 2:
-            Guy.Aktiv = true;
-            Guy.Zustand = GUYWARTEN;
-            PapierText = Renderer::DrawText(GERETTET, TXTPAPIER, 1);
-            break;
+        case 1: Crafting::Cancel(false);Guy.Aktiv=false;Guy.Zustand=GUYWARTEN;break;
+        case 2:Guy.Aktiv=true;PapierText=Renderer::DrawText(GERETTET,TXTPAPIER,1);break;
         case 3:
-            if (Frage == 2)
-            {
-                Guy.Aktion = NOTHING;
-                Frage = -1;
-                break;
-            }
-            Spielzustand = State::RESCUED;
-            Frage = -1;
-            break;
-        case 4:
-            // Route herstellen
-            Guy.Aktiv = true;
-            Guy.Zustand = GUYLINKS;
-            RoutePunkt = -1;
-            Steps = 0;
-            Step = 0;
-            RouteStart.x = Guy.Pos.x;
-            RouteStart.y = Guy.Pos.y;
-            RouteZiel.y = Guy.Pos.y;
-            for (short x = MAXXKACH - 1; x > 1; x--) // Position des Rettungsschiffs festlegen
-            {
-                if (Scape[x][Guy.Pos.y].Art != 1) break;
-                RouteZiel.x = x + 1;
-            }
-            // Schiff hinbauen
-            Scape[RouteZiel.x][RouteZiel.y].Phase = 0;
-            Scape[RouteZiel.x][RouteZiel.y].Objekt = GUYSCHIFF;
-            Scape[RouteZiel.x][RouteZiel.y].ObPos.x = 10;
-            Scape[RouteZiel.x][RouteZiel.y].ObPos.y = 10;
-            RouteZiel.x -= 2;
-            Routing::FindTheWay();
-            Guy.Zustand = GUYLINKS;
-            break;
-        case 5:
-            Guy.Zustand = GUYLINKS;
-            Routing::ShortRoute(((Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][2].x +
-                                    Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][3].x) / 2),
-                                ((Scape[Guy.Pos.x][Guy.Pos.y].yScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][2].y +
-                                    Scape[Guy.Pos.x][Guy.Pos.y].yScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][3].y) / 2));
-            break;
-        case 6:
-            Guy.Pos.x += 2;
-            Guy.Zustand = GUYSCHWIMMEN;
-            Routing::ShortRoute(((Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][0].x +
-                                    Scape[Guy.Pos.x][Guy.Pos.y].xScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][2].x) / 2),
-                                ((Scape[Guy.Pos.x][Guy.Pos.y].yScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][1].y +
-                                    Scape[Guy.Pos.x][Guy.Pos.y].yScreen + EckKoor[Scape[Guy.Pos.x][Guy.Pos.y].Typ][3].y) / 2));
-            break;
-        case 7:
-            Guy.PosScreen.y -= 10;
-            if (!BootsFahrt) World::ChangeBootsFahrt();
-            Guy.Aktiv = true;
-            Guy.Zustand = GUYSCHIFF;
-            RoutePunkt = -1;
-            Steps = 0;
-            Step = 0;
-            RouteStart.x = Guy.Pos.x;
-            RouteStart.y = Guy.Pos.y;
-            RouteZiel.y = Guy.Pos.y;
-            RouteZiel.x = MAXXKACH - 2;
-            Routing::FindTheWay();
-            Scape[Guy.Pos.x][Guy.Pos.y].ObPos.x = static_cast<short>(Bmp[MEERWELLEN].rcDes.left);
-            Scape[Guy.Pos.x][Guy.Pos.y].ObPos.y = static_cast<short>(Bmp[MEERWELLEN].rcDes.top);
-            Scape[Guy.Pos.x][Guy.Pos.y].Objekt = MEERWELLEN;
-            break;
-        case 8:
-            Guy.Aktiv = true;
-            Guy.Zustand = GUYSCHIFF;
-            break;
-        case 9:
-            Guy.Aktion = NOTHING;
-            Guy.Zustand = GUYLINKS;
-            Spielzustand = State::OUTRO;
+            if(Frage==2){Frage=-1;Guy.Aktion=NOTHING;break;}
+            Frage=-1;if(!Rescue::Start()){Guy.Aktion=NOTHING;Guy.Aktiv=false;Expedition::Notify(L"救援船暂时无法靠岸，请先寻找通往海岸的路线。");}
             break;
         }
     }

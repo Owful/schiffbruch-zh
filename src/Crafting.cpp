@@ -6,6 +6,7 @@
 #include "Action.hpp"
 #include "State.hpp"
 #include "DayJournal.hpp"
+#include "Interaction.hpp"
 #include <array>
 #include <istream>
 #include <ostream>
@@ -103,25 +104,23 @@ namespace Crafting
     bool Make(int product)
     {
         const auto* r=Find(product);if(!r)return false;
-        if(Spielzustand!=State::GAME||Nacht||BootsFahrt||Guy.Aktiv||Guy.Aktion!=Action::NOTHING||PapierText!=-1||Busy()){Expedition::Notify(L"请先完成当前行动并关闭对话，再在岸上制作。");return false;}
+        if(Busy()&&pendingProduct==product)return true;
+        if(Spielzustand!=State::GAME||Nacht||BootsFahrt||PapierText!=-1){Expedition::Notify(L"请先完成当前行动并关闭对话，再在岸上制作。");return false;}
         if(Stunden>=12){Expedition::Notify(L"天黑了，先休息，明早再制作。");return false;}
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return false;}
+        if(!Interaction::Replace())return false;
         pendingProduct=product;elapsed=0;animate();Bmp[Guy.Zustand].Phase=0;
         const auto message=L"正在制作"+Name(product)+L"，完成后扣除材料。可点击“停止制作”取消。";Expedition::Notify(message.c_str());return true;
     }
     bool StartSupplyAction(int product)
     {
         if(!IsSupplyAction(product))return false;
-        if(Busy())
-        {
-            if(pendingProduct!=product){const auto message=L"正在"+std::wstring(UsingSupply()?L"":L"制作")+Name(pendingProduct)+L"，请稍候或停止当前动作。";Expedition::Notify(message.c_str());}
-            return false;
-        }
-        if(Guy.Aktiv||Guy.Aktion!=Action::NOTHING||Spielzustand!=State::GAME||Nacht||PapierText!=-1)
-        {Expedition::Notify(L"请先完成当前动作并关闭提示，再使用补给。");return false;}
+        if(Spielzustand!=State::GAME||Nacht||PapierText!=-1)return false;
+        if(Busy()&&pendingProduct==product)return false;
         if(Stunden>=12){Expedition::Notify(L"天黑了，先休息，明早再使用补给。");return false;}
         const auto problem=Problem(product);if(!problem.empty()){Expedition::Notify(problem.c_str());return false;}
         if(product==OpenCache||product==FeedFire)Guy.PosAlt=Guy.PosScreen;
+        if(!Interaction::Replace())return false;
         pendingProduct=product;elapsed=0;animate();Bmp[Guy.Zustand].Phase=0;
         const auto message=L"正在"+Name(product)+L"……";Expedition::Notify(message.c_str());return true;
     }

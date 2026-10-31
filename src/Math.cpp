@@ -114,7 +114,7 @@ namespace Math
                 RouteStart=Guy.Pos;RouteZiel=Erg;
                 if(Routing::FindTheWay())
                 {
-                    Bmp[BUTTSTOP].Phase=0;Guy.Aktiv=true;RoutePunkt=-1;Steps=0;Step=0;
+                    RouteKoor[0]=Guy.PosScreen;Bmp[BUTTSTOP].Phase=0;Guy.Aktiv=true;RoutePunkt=-1;Steps=0;Step=0;
                 }
                 else
                 {

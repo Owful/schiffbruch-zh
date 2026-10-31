@@ -17,6 +17,7 @@
 #include "SceneView.hpp"
 #include "Survival.hpp"
 #include "Campfires.hpp"
+#include "Rescue.hpp"
 #include "Localization.hpp"
 
 #include <cmath>
@@ -257,6 +258,7 @@ namespace Renderer
 
     void ZeichneGuy()
     {
+        if(Spielzustand==State::RESCUED&&Rescue::Aboard())return;
         if (BootsFahrt)
         {
             if (Guy.Zustand == GUYSCHIFF)
@@ -442,7 +444,7 @@ namespace Renderer
 
         Blitten(lpDDSScape, lpDDSBack, false); // Landschaft zeichnen
 
-        ZeichneObjekte();
+        ZeichneObjekte();Rescue::Draw();
 
         if (PapierText != -1) ZeichnePapier();
 

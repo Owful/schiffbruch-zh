@@ -27,6 +27,7 @@
 #include "DayJournal.hpp"
 #include "ExpeditionRules.hpp"
 #include "Campfires.hpp"
+#include "Rescue.hpp"
 #include "MapView.hpp"
 #include <sstream>
 
@@ -37,6 +38,7 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include <set>
 #include <imm.h>
 #include <filesystem>
 #include <stdexcept>
@@ -88,12 +90,15 @@ bool Application::checkRevision()
             require(Step==81,"land walking change affected boat movement");
         }
         report<<"{\n  \"legacy_loaded\":"<<(legacyLoaded?"true":"false")<<",\n  \"maps\": [\n";
+        std::set<int> landingRows,pirateLocations;
         const int seeds[]={1,7,42,2026};
         for(int n=0;n<4;++n)
         {
             std::srand(seeds[n]);startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();PaceRules::reset();Stunden=Minuten=0;
             for(int y=0;y<MAXYKACH;++y)for(int x=0;x<MAXXKACH;++x)
                 require(Scape[x][y].Entdeckt==(std::abs(x-Guy.Pos.x)<=1&&std::abs(y-Guy.Pos.y)<=1),"new game visibility is not centered 3x3");
+            landingRows.insert(Guy.Pos.y);
+            for(int py=0;py<MAXYKACH;++py)for(int px=0;px<MAXXKACH;++px)if(Scape[px][py].Objekt==WRACK2)pirateLocations.insert(py*MAXXKACH+px);
             Guy.Resource[WASSER]=Guy.Resource[NAHRUNG]=Guy.Resource[GESUNDHEIT]=100;
             World::AddTime(1,0);World::AddTime(0,1);require(Stunden==0&&Minuten==0,"legacy actions still jump the clock");
             for(int i=0;i<240;++i)GameClock::Advance(100000,true);
@@ -137,8 +142,13 @@ bool Application::checkRevision()
             Interaction::StopSafely();Game::SaveGame();require(Game::LoadGame()&&Guy.Inventar[ROHHAMMER]==1&&Guy.Inventar[ROHSTREICHHOLZ]==1&&PaceRules::zoomStep==8,"new save did not preserve tools or zoom");
             report<<"    {\"seed\":"<<seeds[n]<<",\"action_time_jump\":0,\"idle_minutes_per_24_seconds\":60,\"loss\":5,\"tools_crafted\":7,\"zoomed_clicks\":"<<clicks<<",\"save_roundtrip\":true}"<<(n==3?"":",")<<"\n";
         }
+        require(landingRows.size()>1&&pirateLocations.size()>1,"wreck and landing positions are still fixed");
         // The map keeps the square grid's diamond perspective without revealing unexplored tiles.
         startGameForCheck();PapierText=-1;Frage=-1;Interaction::StopSafely();World::Generate();
+        ModernUI::DrawPanel();
+        {const auto* pixels=reinterpret_cast<const unsigned*>(lpDDSBack->pixels());
+         for(int my=rcKarte.top;my<rcKarte.bottom;++my)for(int mx=rcKarte.left;mx<rcKarte.right;++mx)
+             require((pixels[my*1280+mx]&0xffffff)!=0x416263&&(pixels[my*1280+mx]&0xffffff)!=0x659699,"minimap still draws map or viewport outlines");}
         const auto mapPlayer=Guy.Pos;const auto mapCamera=Camera;const int mapMinute=Minuten;
         int seenBeforeMap=0;for(const auto& column:Scape)for(const auto& t:column)seenBeforeMap+=t.Entdeckt;
         ModernUI::HandleClick(rcKarte.left+1,rcKarte.top+1);
@@ -396,6 +406,26 @@ bool Application::checkRevision()
         ModernUI::HandleKey(sf::Keyboard::Return);require(DayJournal::Advance(1,true),"night skip did not advance after reading time");
         Guy.Aktiv=false;Action::handler(Guy.Aktion);
         require(!Nacht&&Tag==6&&DayJournal::events==0&&Guy.Resource[GESUNDHEIT]==95.f,"morning did not clear the journal or repeated sleep effects");
+        // Real command replacement keeps materials and construction stages.
+        startGameForCheck();PapierText=-1;Interaction::StopSafely();
+        Guy.Inventar[ROHAST]=Guy.Inventar[ROHSTEIN]=10;Guy.Inventar[ROHAXT]=0;
+        require(Crafting::Make(ROHAXT),"interrupt fixture could not start craft");Crafting::Update(200000,true);
+        const auto physical=Guy.PosScreen;require(Interaction::Replace()&&!Crafting::Busy()&&Guy.PosScreen.x==physical.x&&Guy.PosScreen.y==physical.y&&Guy.Inventar[ROHAST]==10,"replacement consumed materials or snapped player");
+        Guy.Aktion=Action::FIELD;Guy.Aktiv=true;auto& partial=Scape[Guy.Pos.x][Guy.Pos.y];partial.AkNummer=7;partial.Rohstoff[ROHAST]=3;
+        require(Interaction::Replace()&&partial.AkNummer==7&&partial.Rohstoff[ROHAST]==3,"replacement reset partial construction");
+        startGameForCheck();PapierText=-1;Interaction::StopSafely();Guy.Aktion=Action::RESCUED;
+        require(Rescue::Start(),"rescue could not find a reachable dock");
+        bool boarded=false,departed=false;float previousX=Rescue::shipX,previousY=Rescue::shipY;
+        for(int i=0;i<20000&&Spielzustand==State::RESCUED;++i)
+        {
+            ++Bild;Rescue::Advance(16667,true);
+            require(std::hypot(Rescue::shipX-previousX,Rescue::shipY-previousY)<2.f,"rescue ship teleported");previousX=Rescue::shipX;previousY=Rescue::shipY;
+            require(Guy.Zustand!=GUYSCHWIMMEN,"rescue still forced swimming");
+            if(Rescue::phase==Rescue::Board&&!boarded){boarded=true;World::Generate();Renderer::ZeigeIntro();
+            const auto* p=lpDDSBack->pixels();std::ofstream out("rescue-boarding.ppm",std::ios::binary);out<<"P6\n1280 720\n255\n";for(int j=0;j<1280*720;++j){const char rgb[]={char(p[4*j+2]),char(p[4*j+1]),char(p[4*j])};out.write(rgb,3);}}
+            departed|=Rescue::Aboard();
+        }
+        require(boarded&&departed&&Spielzustand==State::OUTRO,"rescue did not board and sail out continuously");
         Sound::SetEnabled(false);
         report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"silent_ui_clicks\":true,\n  \"nonblocking_dusk_and_critical_pause\":true,\n  \"passed\":true\n}\n";return true;
     }
@@ -499,9 +529,9 @@ void Application::run()
         else if (Spielzustand == State::INTRO || Spielzustand == State::RESCUED)
         {
             if (Direct::CheckKey() == 0) { m_window.close(); break; }
-            Math::Animationen();
-            if (!Guy.Aktiv) Action::handler(Guy.Aktion);
-            Renderer::ZeigeIntro();
+            if(Spielzustand==State::RESCUED)Rescue::Advance(elapsed,m_window.hasFocus()&&!ModernUI::OverlayActive());
+            else{Math::Animationen();if (!Guy.Aktiv) Action::handler(Guy.Aktion);}
+            if(Spielzustand!=State::OUTRO)Renderer::ZeigeIntro();
         }
         else if (Spielzustand == State::GAME)
         {

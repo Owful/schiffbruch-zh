@@ -19,11 +19,15 @@ namespace MapView
         }
         void markers(HDC dc,const MapProjection::Frame& frame,bool large)
         {
+            if(large)
+            {
             const auto crop=SceneView::Crop();
             const auto a=frame.project(Camera.x+crop.left,Camera.y+crop.top),b=frame.project(Camera.x+crop.right,Camera.y+crop.bottom);
             auto pen=CreatePen(PS_SOLID,1,RGB(101,150,153));auto previousPen=SelectObject(dc,pen);auto previousBrush=SelectObject(dc,GetStockObject(HOLLOW_BRUSH));
             Rectangle(dc,a.x,a.y,b.x,b.y);SelectObject(dc,previousBrush);SelectObject(dc,previousPen);DeleteObject(pen);
+            }
             const auto player=frame.project(Guy.PosScreen.x,Guy.PosScreen.y);const int r=large?4:2;
+            HPEN pen;HGDIOBJ previousPen,previousBrush;
             auto brush=CreateSolidBrush(Gold);pen=CreatePen(PS_SOLID,1,RGB(30,39,36));previousBrush=SelectObject(dc,brush);previousPen=SelectObject(dc,pen);
             Ellipse(dc,player.x-r,player.y-r,player.x+r+1,player.y+r+1);SelectObject(dc,previousBrush);SelectObject(dc,previousPen);DeleteObject(brush);DeleteObject(pen);
         }
@@ -45,7 +49,7 @@ namespace MapView
             POINT corners[4];for(int i=0;i<4;++i){const auto p=frame.project(t.xScreen+EckKoor[t.Typ][i].x,t.yScreen+EckKoor[t.Typ][i].y);corners[i]={p.x,p.y};}
             auto brush=CreateSolidBrush(color);const auto old=SelectObject(dc,brush);Polygon(dc,corners,4);SelectObject(dc,old);DeleteObject(brush);
         }
-        SelectObject(dc,previousPen);outline(dc,frame);lpDDSKarte->ReleaseDC(dc);
+        SelectObject(dc,previousPen);lpDDSKarte->ReleaseDC(dc);
     }
     void DrawMini()
     {

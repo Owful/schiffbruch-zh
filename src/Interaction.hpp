@@ -12,4 +12,5 @@ namespace Interaction
     void Update();
     void Cancel();
     void StopSafely();
+    bool Replace();
 }

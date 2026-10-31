@@ -16,6 +16,8 @@
 
 #include <cstdio>
 #include <cstring>
+#include <vector>
+#include <array>
 
 namespace World
 {
@@ -1379,46 +1381,17 @@ namespace World
 
     void Piratenwrack()
     {
-        short x = 0;
-        short y = 0;
-
-        short Richtung = rand() % 3;
-        switch (Richtung)
+        std::vector<ZWEID> candidates;
+        for(short y=3;y<MAXYKACH-3;++y)for(short x=3;x<MAXXKACH-3;++x)
         {
-        case 0:
-            x = MAXXKACH / 2;
-            for (short i = 0; i < MAXYKACH; i++)
-            {
-                if (Scape[x][i].Art != 1)
-                {
-                    y = i - 1;
-                    break;
-                }
-            }
-            break;
-        case 1:
-            y = MAXYKACH / 2;
-            for (short i = MAXXKACH - 1; i >= 0; i--)
-            {
-                if (Scape[i][y].Art != 1)
-                {
-                    x = i + 1;
-                    break;
-                }
-            }
-            break;
-        case 2:
-            x = MAXXKACH / 2;
-            for (short i = MAXYKACH - 1; i >= 0; i--)
-            {
-                if (Scape[x][i].Art != 1)
-                {
-                    y = i + 1;
-                    break;
-                }
-            }
-            break;
+            if(Scape[x][y].Art!=1||Scape[x][y].Objekt!=MEERWELLEN)continue;
+            bool coast=false;
+            for(const auto d:std::array<ZWEID,4>{{{1,0},{-1,0},{0,1},{0,-1}}})
+                coast|=Scape[x+d.x][y+d.y].Art!=1&&Scape[x+d.x][y+d.y].Begehbar;
+            if(coast)candidates.push_back({x,y});
         }
+        if(candidates.empty())return;
+        const auto chosen=candidates[rand()%candidates.size()];const short x=chosen.x,y=chosen.y;
         Scape[x][y].Objekt = WRACK2;
         Scape[x][y].ObPos.x = static_cast<short>(Bmp[WRACK2].rcDes.left);
         Scape[x][y].ObPos.y = static_cast<short>(Bmp[WRACK2].rcDes.top);

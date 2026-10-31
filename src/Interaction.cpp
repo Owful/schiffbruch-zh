@@ -7,6 +7,7 @@
 #include "Construction.hpp"
 #include "Crafting.hpp"
 #include "Campfires.hpp"
+#include "DayJournal.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -45,7 +46,8 @@ namespace Interaction
         }
         bool begin(int x,int y,short action)
         {
-            if(Guy.Aktiv||Guy.Aktion!=Action::NOTHING){Expedition::Notify(L"正在行动，请先点击“停止行动”，再选择目标。");return true;}
+            if((pending==action&&target.x==x&&target.y==y)||(Guy.Aktion==action&&Guy.Pos.x==x&&Guy.Pos.y==y))return true;
+
             if(BootsFahrt){Expedition::Notify(L"请先靠岸，再收集岛上的食物与木材。");return true;}
             if(action==Action::OPEN_CACHE&&Guy.Inventar[ROHHAMMER]<1){Expedition::CacheHint(x,y);return true;}
             if(action==Action::FEED_FIRE&&Guy.Inventar[ROHSTAMM]<1&&Guy.Inventar[ROHAST]<2){Expedition::Notify(L"添柴需要原木 1，或树枝 2。请先收集木材。");return true;}
@@ -53,7 +55,7 @@ namespace Interaction
             if(action==Action::SLINGSHOT&&Guy.Inventar[ROHSCHLEUDER]<1){Expedition::Notify(L"捕鸟需要投石索，可在“制作 → 工具”里准备。");return true;}
             if(action==Action::LOG&&Guy.Inventar[ROHAXT]==0){Expedition::Notify(L"砍树需要石斧。打开“制作”，用树枝 1 + 石头 1 制作。");return true;}
             if(action==Action::LOG&&Guy.Inventar[ROHSTAMM]>=10){Expedition::Notify(L"原木已满（10 / 10），先用来建造，再砍伐。");return true;}
-            Cancel();
+            if(!Replace())return true;
             if(Guy.Pos.x==x&&Guy.Pos.y==y)
             {
                 Guy.AkNummer=0;
@@ -72,6 +74,7 @@ namespace Interaction
                 RouteStart={-1,-1};RouteZiel={-1,-1};
                 Expedition::Notify(L"目标暂时无法到达。请先找到通路；不会隔着障碍拾取。");return true;
             }
+            RouteKoor[0]=Guy.PosScreen;
             target={short(x),short(y)};pending=action;Guy.Aktiv=true;Guy.Aktion=Action::NOTHING;
             RoutePunkt=-1;Steps=0;Step=0;Bmp[BUTTSTOP].Phase=0;
             Expedition::Notify(action==Action::OPEN_CACHE?L"正在走向漂流箱，抵达后用木石锤砸开。":action==Action::FEED_FIRE?L"正在走向篝火，抵达后添加木材。":action==Action::SLINGSHOT?L"正在走向附近的树木，抵达后捕鸟。":action==Action::EAT?L"已锁定成熟果实，走近后自动进食。":action==Action::DRINK?L"已锁定水源，走近后自动饮水。":action==Action::LOG?L"已锁定树木，走近后自动砍伐。":L"已锁定未完成的建筑，走近后继续施工。");return true;
@@ -101,6 +104,17 @@ namespace Interaction
         return closest;
     }
     bool Target(int x,int y,Intent intent){const auto action=actionAt(x,y,intent);if(action==Action::NOTHING){Expedition::Notify(L"目标已改变，请重新选择。");return true;}return begin(x,y,action);}
+    bool Replace()
+    {
+        if(Spielzustand!=State::GAME||Nacht||Guy.Aktion==Action::DAY_END||Guy.Aktion==Action::DEATH||Guy.Aktion==Action::RESCUED)return false;
+        if(Guy.Aktion==Action::DOCK||Guy.Aktion==Action::UNDOCK)return false;
+        if(!Guy.Aktiv&&Guy.Aktion==Action::NOTHING)return true;
+        auto& timber=Scape[Guy.Pos.x][Guy.Pos.y];
+        if(Guy.Aktion==Action::LOG&&timber.Objekt>=BAUM1DOWN&&timber.Objekt<=BAUM4DOWN)
+        {timber.Objekt=-1;Expedition::CollectTimber();DayJournal::Mark(Tag,DayJournal::Timber);}
+        Crafting::Cancel(false);const auto position=Guy.PosScreen;
+        StopSafely();Guy.PosScreen=position;Guy.PosAlt=position;return true;
+    }
     void StopSafely()
     {
         Cancel();Routing::MarkRoute(false);
@@ -115,7 +129,7 @@ namespace Interaction
         if(!valid(Guy.Pos.x,Guy.Pos.y))return false;
         if(intent==Intent::Hunt)
         {
-            if(Guy.Aktiv||Guy.Aktion!=Action::NOTHING){Expedition::Notify(L"正在行动，请先停止当前行动。");return true;}
+
             if(BootsFahrt){Expedition::Notify(L"请先靠岸，再走近树木捕鸟。");return true;}
             if(Guy.Inventar[ROHSCHLEUDER]<1){Expedition::Notify(L"捕鸟需要投石索，可在“制作 → 工具”里准备。");return true;}
             // Search short, revealed, walkable routes; skip a blocked nearer tree.
