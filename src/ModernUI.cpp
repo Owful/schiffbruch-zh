@@ -399,14 +399,17 @@ namespace ModernUI
         button(100,330,284,50,L"继续旅程",[]{StartGame(false);},saved);
         button(100,394,284,50,L"新的旅程",[]{if(std::filesystem::exists("save.dat"))confirmNew=true;else StartGame(true);});
         button(100,458,136,42,L"设置",[]{paused=true;settings=true;});button(248,458,136,42,L"退出",[]{quit=true;});
-        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。  ·  v0.1.0-preview.13",13,MUTED);end();
+        txt(100,628,L"全中文界面 · 单击移动 · 一键制作",13,MUTED);txt(100,659,L"按回车继续，按 Esc 打开菜单。  ·  v0.1.0-preview.14",13,MUTED);end();
         DrawOverlay();NativeDisplay::Present();
     }
     void DrawCredits()
     {
         buttons.clear();overlayStart=0;NativeDisplay::SetFade(1,1,1);begin(lpDDSBack);fill(0,0,1280,720,BG);
-        txt(410,180,L"每一次漂流，都是新的开始。",25,GOLD);txt(470,262,L"原作：德克·普拉特",16);txt(470,299,L"移植：卢卡斯·迪伦贝格",16);
-        button(466,390,340,50,L"返回主菜单",[]{Spielzustand=State::LOGO;});button(466,456,340,42,L"退出游戏",[]{quit=true;});end();NativeDisplay::Present();
+        const auto centered=[&](int y,const wchar_t* text,int size,COLORREF color){auto old=SelectObject(active,font(size));SetBkMode(active,TRANSPARENT);SetTextColor(active,color);RECT r{104,y,1176,y+42};DrawTextW(active,text,-1,&r,DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);SelectObject(active,old);};
+        centered(150,L"每一次漂流，都是新的开始。",25,GOLD);
+        centered(228,L"中文改进版主创",13,MUTED);centered(257,L"Owfulw 哦好风",25,GOLD);
+        centered(335,L"原作：德克·普拉特",16,MUTED);centered(369,L"移植：卢卡斯·迪伦贝格",16,MUTED);
+        button(466,450,340,50,L"返回主菜单",[]{Spielzustand=State::LOGO;});button(466,516,340,42,L"退出游戏",[]{quit=true;});end();NativeDisplay::Present();
     }
     void DrawDialog()
     {
@@ -469,7 +472,7 @@ namespace ModernUI
             MapView::DrawOverview();
             txt(134,650,L"金色圆点：你的位置    暗处：尚未探索",13,MUTED);end();return;
         }
-        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程 · v0.1.0-preview.13");
+        begin(lpDDSBack);modalPanel(safety?L"生命危急 · 已自动暂停":confirmNew?L"开始新的旅程":journal?L"生存手记":settings?L"游戏设置":L"暂停旅程 · v0.1.0-preview.14");
         if(safety)
         {
             txt(326,231,L"当前行动已停止，请先处理生存需要。",16,GOLD);

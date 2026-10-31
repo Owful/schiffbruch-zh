@@ -440,6 +440,8 @@ bool Application::checkRevision()
             departed|=Rescue::Aboard();
         }
         require(boarded&&departed&&Spielzustand==State::OUTRO,"rescue did not board and sail out continuously");
+        ModernUI::DrawCredits();
+        {const auto* p=lpDDSBack->pixels();std::ofstream out("credits-preview.ppm",std::ios::binary);out<<"P6\n1280 720\n255\n";for(int j=0;j<1280*720;++j){const char rgb[]={char(p[4*j+2]),char(p[4*j+1]),char(p[4*j])};out.write(rgb,3);}}
         Sound::SetEnabled(false);
         report<<"  ],\n  \"panel_interactions\":true,\n  \"timed_supply_actions\":true,\n  \"active_drink_save\":true,\n  \"active_craft_save\":true,\n  \"night_craft_walk_tent_entry\":true,\n  \"night_construction_finishes\":true,\n  \"paused_field_return_and_finish\":true,\n  \"remaining_material_shortage\":true,\n  \"focus_and_grid\":true,\n  \"river_and_sea_animation\":true,\n  \"audio_assets_and_mixer\":true,\n  \"silent_ui_clicks\":true,\n  \"nonblocking_dusk_and_critical_pause\":true,\n  \"passed\":true\n}\n";return true;
     }
@@ -452,7 +454,7 @@ Application::Application(const std::string& name, HINSTANCE instance_handle)
       , m_time(std::time(nullptr))
 {
     // Set globals
-    m_window.setTitle(sf::String(L"余岸 Stillshore · v0.1.0-preview.13"));
+    m_window.setTitle(sf::String(L"余岸 Stillshore · v0.1.0-preview.14"));
     // Gameplay has no text fields; keep Chinese IME composition from consuming shortcuts.
     ImmAssociateContext(m_window.getSystemHandle(),nullptr);
     // Start with readable text on high-resolution displays; the window remains resizable.

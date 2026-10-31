@@ -76,8 +76,8 @@ LOGO                    BITMAP  DISCARDABLE     "../bin/images/Logo.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,0,13
- PRODUCTVERSION 0,1,0,13
+ FILEVERSION 0,1,0,14
+ PRODUCTVERSION 0,1,0,14
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -95,14 +95,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "dP-Software\0"
             VALUE "FileDescription", "Stillshore\0"
-            VALUE "FileVersion", "0.1.0.13\0"
+            VALUE "FileVersion", "0.1.0.14\0"
             VALUE "InternalName", "Schiffbruch\0"
             VALUE "LegalCopyright", "Copyright � 2002 Dirk Plate\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "Schiffbruch.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Stillshore\0"
-            VALUE "ProductVersion", "0.1.0-preview.13\0"
+            VALUE "ProductVersion", "0.1.0-preview.14\0"
             VALUE "SpecialBuild", "\0"
         END
     END
